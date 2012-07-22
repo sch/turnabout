@@ -1,0 +1,7 @@
+Not sure how to make a game. I am probably the least qualified hack to get away with receiving a computer science degree. Nontheless, this will be my record of bringing a lost puzzle gem from the Playstation days back: the wonderful Turnabout.
+
+It's a simple game, so this should be a simple job, right? The game logic is simple: there's a board, and on that board there are static blocks and there are blocks that can move. Among the moving blocks are colored balls: get two or more colored balls next to one another, and they’ll disappear.
+
+Game design is this weird nebulous thing to me right now. I haven't looked at a lot of game engines yet, so I'm not sure what they do, but for a simple game like this, it seems like what they offer is overkill. I know that the version of physics I need for this project is much simpler than the box-2D/collision detection systems in a lot of 2D game engines. I can imagine how to write the code that will rotate each board, and determine what the final state will look like, but how do I plug that into a rendering engine? How do I make sure that when I'm rotating the board, I'm not accidentally accepting more input that will mess up the next move?
+
+A tile-based game engine isn’t hard, and I can imagine a version of this game that describes a level as a game board with different states. There's the 
