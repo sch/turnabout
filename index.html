@@ -2,26 +2,32 @@
 <html lang="en">
 <head>
   <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width; initial-scale=1.0; maximum-scale=1.0; minimum-scale=1.0; user-scalable=no;"/>
+
   <title>Turnabout</title>
-  <link rel="stylesheet" type="text/css" href="style.css" />
-  <script src="game.js"></script>
+  <!-- <link rel="stylesheet" type="text/css" href="style.css" /> -->
   <!--[if IE]>
     <script src="http://html5shiv.googlecode.com/svn/trunk/html5.js"></script>
   <![endif]-->
+
+  <style>
+    * {
+      -webkit-touch-callout: none;
+      -webkit-user-select: none;
+      -khtml-user-select: none;
+      -moz-user-select: none;
+      -ms-user-select: none;
+      user-select: none;
+    }
+  </style>
+
 </head>
 
-<body><div id="everything">
+<body>
 
-  <h1>TURNABOUT</h1>
+  <div id="game"></div>
 
-  <div>
-
-    <canvas id="game" width="200" height="200"></canvas>
-  
-  </div>
-
-</div>
-
-
+  <script src="helpers.js"></script>
+  <script src="game.js"></script>
 </body>
 </html>
