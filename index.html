@@ -5,27 +5,57 @@
   <meta name="viewport" content="width=device-width; initial-scale=1.0; maximum-scale=1.0; minimum-scale=1.0; user-scalable=no;"/>
 
   <title>Turnabout</title>
-  <!-- <link rel="stylesheet" type="text/css" href="style.css" /> -->
+  <link rel="stylesheet" type="text/css" href="style.css" />
   <!--[if IE]>
     <script src="http://html5shiv.googlecode.com/svn/trunk/html5.js"></script>
   <![endif]-->
-
-  <style>
-    * {
-      -webkit-touch-callout: none;
-      -webkit-user-select: none;
-      -khtml-user-select: none;
-      -moz-user-select: none;
-      -ms-user-select: none;
-      user-select: none;
-    }
-  </style>
 
 </head>
 
 <body>
 
-  <div id="game"></div>
+  <div id="game">
+    <table id="theTable">
+    <tr>
+      <td class="block"></td>
+      <td class="block"></td>
+      <td class="block"></td>
+      <td class="block"></td>
+      <td class="block"></td>
+    </tr>
+    <tr>
+      <td class="block"></td>
+      <td class="bg"></td>
+      <td class="bg"></td>
+      <td class="bg"></td>
+      <td class="block"></td>
+    </tr>
+    <tr>
+      <td class="block"></td>
+      <td class="bg"></td>
+      <td class="bg"></td>
+      <td class="bg"></td>
+      <td class="block"></td>
+    </tr>
+    <tr>
+      <td class="block"></td>
+      <td class="bg"><div class="circle darkred"></div></td>
+      <td class="block"></td>
+      <td class="bg"><div class="square darkred"></div></td>
+      <td class="block"></td>
+    </tr>
+    <tr>
+      <td class="block"></td>
+      <td class="block"></td>
+      <td class="block"></td>
+      <td class="block"></td>
+      <td class="block"></td>
+    </tr>
+    </table>
+
+    <button id="counterclockwise" onclick="rotate(-90);">Counterclockwise</button>
+    <button id="clockwise" onclick="rotate(90);">Clockwise</button>
+  </div>
 
   <script src="helpers.js"></script>
   <script src="game.js"></script>

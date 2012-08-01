@@ -69,24 +69,52 @@ table{
 
 body{ height: 100%; }
 
-#everything{
-  position: absolute;
-  top: 0;
-  left: 0;
-  display: block;
-  height: 100%;
+* {
+  box-sizing: border-box;
+
+  /* -webkit-touch-callout: none; */
+  /* -webkit-user-select: none; */
+  /* -khtml-user-select: none; */
+  /* -moz-user-select: none; */
+  /* -ms-user-select: none; */
+  /* user-select: none; */
+}
+
+table {
+  margin: 0 auto;
+  -webkit-transition: -webkit-transform 0.3s ease-in-out;
+}
+  tr {
+    /* border-left: solid 3px black; */
+    /* border-bottom: solid 3px white; */
+  }
+  td {
+    padding: .5em;
+    width: 3em;
+    height: 3em;
+  }
+    td.bg {
+      background: rgba(255,200,162,1);
+    }
+    td.block {
+      background: rgba(227,91,102,1);
+    }
+
+.ball {
+  border-radius: 50%;
   width: 100%;
-  background-color: rgba(233,189,111,1);
-  box-shadow: inset 0 0 300px rgba(0,0,0,0.2);
+  height: 100%;
 }
 
-h1{
-  font-family: "Tommaso";
-  font-size: 5em;
-  text-shadow: rgba(0,0,0,0.2) 2px 2px;
-  letter-spacing: 0.3em;
-  margin-top: 10%;
-  text-align: center;
-  color: white;
+.square {
+  width: 100%;
+  height: 100%;
 }
 
+.black {
+  background: black;
+}
+
+.darkred {
+  background: rgba(227,91,102,1);
+}
