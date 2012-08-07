@@ -81,7 +81,7 @@ body{ height: 100%; }
 }
 
 table {
-  margin: 0 auto;
+  margin: 1em auto;
   -webkit-transition: -webkit-transform 0.3s ease-in-out;
 }
   tr {
@@ -96,7 +96,7 @@ table {
     td.bg {
       background: rgba(255,200,162,1);
     }
-    td.block {
+    td.wall {
       background: rgba(227,91,102,1);
     }
 
@@ -106,7 +106,7 @@ table {
   height: 100%;
 }
 
-.square {
+.block, .square {
   width: 100%;
   height: 100%;
 }
@@ -118,3 +118,7 @@ table {
 .darkred {
   background: rgba(227,91,102,1);
 }
+
+button { margin: 1em; }
+#counterclockwise { float: left; }
+#clockwise { float: right; }

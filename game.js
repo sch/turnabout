@@ -1,3 +1,11 @@
+//
+// |''||''|                                  '||                       ||    
+//    ||                                      ||                       ||    
+//    ||    '||  ||` '||''| `||''|,   '''|.   ||''|, .|''|, '||  ||` ''||''  
+//    ||     ||  ||   ||     ||  ||  .|''||   ||  || ||  ||  ||  ||    ||    
+//   .||.    `|..'|. .||.   .||  ||. `|..||. .||..|' `|..|'  `|..'|.   `|..' 
+//                                                                           
+
 var threeByThree = ["###",
                     "# #",+
                     "###"];
@@ -43,7 +51,28 @@ var rotate = function(degrees){
 
 };
 
-var updateBalls = function(){
+var updateMovables = function(){
+    var movables = findMovables();
+};
 
+var findMovables = function(){
+    return {
+        balls: document.getElementsByClassName("ball"),
+        blocks: document.getElementsByClassName("block")
+    };
+};
 
+var look = function(direction){
+    if (direction === "south"){}
+    else if (direction === "west"){}
+    else if (direction === "north"){}
+    else if (direction === "east"){}
 }
+
+document.onkeydown = keyControls;
+function keyControls(e) {
+    e = e || window.event;
+    if (e.keyCode=='37') rotate(-90);       //left
+    else if(e.keyCode=='39') rotate(90);    //right
+    updateMovables();
+};
