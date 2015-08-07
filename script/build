@@ -1,0 +1,5 @@
+#!/bin/sh
+
+set +x
+
+elm-make Turnabout.elm
