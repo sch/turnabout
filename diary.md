@@ -1,7 +1,12 @@
-Not sure how to make a game. I am probably the least qualified hack to get away with receiving a computer science degree. Nontheless, this will be my record of bringing a lost puzzle gem from the Playstation days back: the wonderful Turnabout.
+Been a while. Wanted to jot down some notes on how to handle different forms of input for board rotation
 
-It's a simple game, so this should be a simple job, right? The game logic is simple: there's a board, and on that board there are static blocks and there are blocks that can move. Among the moving blocks are colored balls: get two or more colored balls next to one another, and they’ll disappear.
+Each "turn" in this game needs to do one thing: change the orientation of gravity to the left or right of what it currently is. This could be accomplished by left and right arrow keys, by swiping at the board, or by changing the device orientation (on a phone or tablet).
 
-Game design is this weird nebulous thing to me right now. I haven't looked at a lot of game engines yet, so I'm not sure what they do, but for a simple game like this, it seems like what they offer is overkill. I know that the version of physics I need for this project is much simpler than the box-2D/collision detection systems in a lot of 2D game engines. I can imagine how to write the code that will rotate each board, and determine what the final state will look like, but how do I plug that into a rendering engine? How do I make sure that when I'm rotating the board, I'm not accidentally accepting more input that will mess up the next move?
+The device orientation input is pretty interesting, because you need to account for ways that the user can rotate the board while the turn is animating. You could go from portrait to landscape and then back to portrait, and you would have to get the user back into a state to await the next input. Some options:
 
-A tile-based game engine isn’t hard, and I can imagine a version of this game that describes a level as a game board with different states. There's the 
+- treat the direction they rotated to as canonical, and force them to rotate the device back into that position
+- treat whatever direction they rotated to as the new direction either by:
+  - tracking the movement while the blocks are falling, treating whatever "down" currently is as angle for the animation, and then snapping within the final 45° to the nearest edge (v smooth)
+  - doing a 90° or 180° rotation (iOS style) to whatever edge you land on
+
+Who knows only time will tell etc
