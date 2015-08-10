@@ -1,3 +1,9 @@
+Reconsidering using SVG for the board. On one hand, there's a much better set of primitives for handling transforms and representing the game board as actual groups of elements. On the other hand, the graphics support built on top of canvas that Elm implements is pretty complete and much higher-level than whatever I've been cobbling together.
+
+Another interesting aspect is that the svg approach gets to use the virtual-dom library. Not sure if that's faster. Definitely seems like it would be less complicated. Maybe less elegant for animation. Plus most of the DOM diffing is going to be happening at the level of attributes. So many questions!
+
+- - -
+
 Been a while. Wanted to jot down some notes on how to handle different forms of input for board rotation
 
 Each "turn" in this game needs to do one thing: change the orientation of gravity to the left or right of what it currently is. This could be accomplished by left and right arrow keys, by swiping at the board, or by changing the device orientation (on a phone or tablet).
