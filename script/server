@@ -1,0 +1,5 @@
+#!/bin/sh
+
+set +x
+
+elm reactor --port=8989
