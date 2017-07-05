@@ -4,6 +4,7 @@ import Svg exposing (..)
 import Svg.Attributes exposing (..)
 import Html exposing (Html)
 import Color exposing (..)
+import Levels exposing (exampleLevel)
 
 
 reddish =
@@ -22,12 +23,6 @@ size =
     20
 
 
-type MarbleColor
-    = Red
-    | Green
-    | Blue
-
-
 type Cardinality
     = North
     | East
@@ -42,61 +37,21 @@ type Orientation
     | Left
 
 
-type Tile
-    = Wall
-    | Block
-    | Marble MarbleColor
-    | Empty
-
-
 type Rotation
     = Clockwise
     | CounterClockwise
 
 
-type Level
-    = List List Tile
-
-
 type alias Model =
     { gravity : Cardinality
-    , board : Level
+    , board : Levels.Level
     , moves : List Rotation
     }
 
 
-exampleLevelString =
-    """
-####
-#  #
-# r#
-####
-"""
-
-
-parseLevelString string =
-    string |> String.trim |> String.lines |> List.map parseLevelRow
-
-
-parseLevelRow row =
-    row |> String.toList |> (List.map parseLevelChar) |> List.indexedMap (,)
-
-
-parseLevelChar char =
-    case char of
-        '#' ->
-            Wall
-
-        'r' ->
-            Marble Red
-
-        _ ->
-            Empty
-
-
 levelStart =
     { gravity = South
-    , board = parseLevelString exampleLevelString
+    , board = exampleLevel
     , moves = []
     }
 
@@ -143,7 +98,7 @@ main : Html msg
 main =
     let
         chars =
-            Debug.log "examplelevelstring chars" (parseLevelString exampleLevelString)
+            Debug.log "examplelevelstring chars" exampleLevel
     in
         svg [ version "1.1", x "0", y "0", viewBox "0 0 300 400" ]
             [ g [ transform ("translate(100,100) " ++ (transformString (Rotation someRotation))) ]
@@ -198,18 +153,19 @@ toSvg field =
         List.map mapRowsToSvg field
 
 
+convertTileToSvg : Levels.Tile -> Svg msg
 convertTileToSvg tile =
     case tile of
-        Wall ->
+        Levels.Wall ->
             svgWall ( 1, 3 )
 
-        Block ->
+        Levels.Block ->
             svgMarble ( 3, 2 )
 
-        Marble color ->
+        Levels.Marble color ->
             svgMarble ( 3, 2 )
 
-        Empty ->
+        Levels.Empty ->
             svgWall ( 1, 3 )
 
 
