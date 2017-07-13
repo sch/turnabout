@@ -1,4 +1,4 @@
-module Levels exposing (exampleLevel, parseLevelString, Tile(..), Level)
+module Levels exposing (exampleLevel, parseLevelString, size, Tile(..), Level)
 
 
 type MarbleColor
@@ -14,8 +14,19 @@ type Tile
     | Empty
 
 
-type alias Level
-    = List (List Tile)
+type alias Level =
+    List (List Tile)
+
+
+type alias Size =
+    { width : Int, height : Int }
+
+
+size : Level -> Size
+size level =
+    { width = List.length (List.head level |> Maybe.withDefault [])
+    , height = List.length level
+    }
 
 
 exampleLevel =

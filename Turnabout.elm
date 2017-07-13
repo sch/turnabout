@@ -3,17 +3,20 @@ module Turnabout exposing (main)
 import Svg exposing (..)
 import Svg.Attributes exposing (..)
 import Html exposing (Html)
+import Html.Attributes
 import Color exposing (..)
 import Levels exposing (exampleLevel)
+import Keyboard
 
 
 main =
-  Html.program
-    { init = ( levelStart, Cmd.none )
-    , view = view
-    , update = \_ model -> ( model, Cmd.none )
-    , subscriptions = always Sub.none
-    }
+    Html.program
+        { init = ( levelStart, Cmd.none )
+        , view = view
+        , update = update
+        , subscriptions = subscriptions
+        }
+
 
 reddish =
     rgb 208 73 66
@@ -64,12 +67,49 @@ levelStart =
     , moves = [ CounterClockwise, CounterClockwise, Clockwise ]
     }
 
-type Msg =
-    Rotate Rotation
+
+type Msg
+    = Rotate Rotation
+    | NoOp
+
 
 type Transform
-    = Rotation Int
+    = Rotation Int Int Int
     | Translate Int Int
+
+
+update : Msg -> Model -> ( Model, Cmd Msg )
+update msg model =
+    case msg of
+        Rotate rotation ->
+            ( { model | moves = rotation :: model.moves }, Cmd.none )
+
+        NoOp ->
+            ( model, Cmd.none )
+
+
+subscriptions : Model -> Sub Msg
+subscriptions model =
+    Keyboard.downs rotationsFromCode
+
+
+type Key
+    = LeftArrow
+    | RightArrow
+    | Other
+
+
+rotationsFromCode : Int -> Msg
+rotationsFromCode keyCode =
+    case keyCode of
+        37 ->
+            Rotate Clockwise
+
+        39 ->
+            Rotate CounterClockwise
+
+        _ ->
+            NoOp
 
 
 rotationInDegrees : Rotation -> Int
@@ -90,41 +130,56 @@ reduceMoves moves =
 transformString : Transform -> String
 transformString trans =
     case trans of
-        Rotation degrees ->
-            "rotate(" ++ (toString degrees) ++ ")"
+        Rotation degrees x y ->
+            "rotate(" ++ (toString degrees) ++ " " ++ (toString x) ++ " " ++ (toString y) ++ ")"
 
         Translate x y ->
             "translate(" ++ (toString x) ++ "px, " ++ (toString y) ++ "px)"
 
 
-
 view : Model -> Html msg
 view model =
     let
-        chars =
-            Debug.log "examplelevelstring chars" exampleLevel
+        levelSize =
+            Levels.size model.board
+
+        -- @TODO change back to this when generating SVG from levels programatically: (levelSize.width * size // 2)
+        xCenter =
+            (5 * size // 2)
+
+        yCenter =
+            (levelSize.height * size // 2)
 
         rotation =
-            Rotation (reduceMoves model.moves)
+            Rotation (reduceMoves model.moves) xCenter yCenter
     in
-        svg [ version "1.1", x "0", y "0", viewBox "0 0 200 300" ]
-            [ g [ transform ("translate(50%,50%) " ++ (transformString rotation)) ]
-                [ svgWall ( 1, 3 )
-                , svgWall ( 2, 3 )
-                , svgWall ( 0, 3 )
-                , svgWall ( 0, 2 )
-                , svgWall ( 0, 1 )
-                , svgWall ( 0, 0 )
-                , svgWall ( 1, 0 )
-                , svgWall ( 2, 0 )
-                , svgWall ( 3, 0 )
-                , svgWall ( 4, 0 )
-                , svgWall ( 4, 1 )
-                , svgWall ( 4, 2 )
-                , svgWall ( 4, 3 )
-                , svgWall ( 2, 2 )
-                , svgWall ( 3, 3 )
-                , svgMarble ( 3, 2 )
+        Html.div [ Html.Attributes.style [ ( "margin", "1em auto" ) ] ]
+            [ svg
+                [ version "1.1"
+                , x "0"
+                , y "0"
+                , width "100%"
+                , viewBox "0 0 300 400"
+                , preserveAspectRatio "xMaxYMin meet"
+                ]
+                [ g [ transform ("translate(100 100) " ++ transformString rotation) ]
+                    [ svgWall ( 1, 3 )
+                    , svgWall ( 2, 3 )
+                    , svgWall ( 0, 3 )
+                    , svgWall ( 0, 2 )
+                    , svgWall ( 0, 1 )
+                    , svgWall ( 0, 0 )
+                    , svgWall ( 1, 0 )
+                    , svgWall ( 2, 0 )
+                    , svgWall ( 3, 0 )
+                    , svgWall ( 4, 0 )
+                    , svgWall ( 4, 1 )
+                    , svgWall ( 4, 2 )
+                    , svgWall ( 4, 3 )
+                    , svgWall ( 2, 2 )
+                    , svgWall ( 3, 3 )
+                    , svgMarble ( 3, 2 )
+                    ]
                 ]
             ]
 
@@ -137,6 +192,7 @@ svgWall ( gridX, gridY ) =
         , y (toString (gridY * size))
         , width (toString size)
         , height (toString size)
+        , stroke reddishString
         ]
         []
 
