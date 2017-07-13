@@ -7,6 +7,14 @@ import Color exposing (..)
 import Levels exposing (exampleLevel)
 
 
+main =
+  Html.program
+    { init = ( levelStart, Cmd.none )
+    , view = view
+    , update = \_ model -> ( model, Cmd.none )
+    , subscriptions = always Sub.none
+    }
+
 reddish =
     rgb 208 73 66
 
@@ -49,12 +57,15 @@ type alias Model =
     }
 
 
+levelStart : Model
 levelStart =
     { gravity = South
     , board = exampleLevel
-    , moves = []
+    , moves = [ CounterClockwise, CounterClockwise, Clockwise ]
     }
 
+type Msg =
+    Rotate Rotation
 
 type Transform
     = Rotation Int
@@ -86,22 +97,18 @@ transformString trans =
             "translate(" ++ (toString x) ++ "px, " ++ (toString y) ++ "px)"
 
 
-someMoves =
-    [ CounterClockwise, CounterClockwise, Clockwise ]
 
-
-someRotation =
-    reduceMoves someMoves
-
-
-main : Html msg
-main =
+view : Model -> Html msg
+view model =
     let
         chars =
             Debug.log "examplelevelstring chars" exampleLevel
+
+        rotation =
+            Rotation (reduceMoves model.moves)
     in
-        svg [ version "1.1", x "0", y "0", viewBox "0 0 300 400" ]
-            [ g [ transform ("translate(100,100) " ++ (transformString (Rotation someRotation))) ]
+        svg [ version "1.1", x "0", y "0", viewBox "0 0 200 300" ]
+            [ g [ transform ("translate(50%,50%) " ++ (transformString rotation)) ]
                 [ svgWall ( 1, 3 )
                 , svgWall ( 2, 3 )
                 , svgWall ( 0, 3 )
@@ -138,9 +145,9 @@ svgMarble : ( Int, Int ) -> Svg msg
 svgMarble ( x, y ) =
     circle
         [ fill blue
-        , cx (toString ((x * size) + 10))
-        , cy (toString ((y * size) + 10))
-        , r "10"
+        , cx (toString ((x * size) + (size // 2)))
+        , cy (toString ((y * size) + (size // 2)))
+        , r (toString (size / 2))
         ]
         []
 

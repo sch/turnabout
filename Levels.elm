@@ -14,8 +14,8 @@ type Tile
     | Empty
 
 
-type Level
-    = List List Tile
+type alias Level
+    = List (List Tile)
 
 
 exampleLevel =
@@ -31,14 +31,16 @@ exampleLevelString =
 """
 
 
+parseLevelString : String -> Level
 parseLevelString string =
     string |> String.trim |> String.lines |> List.map parseLevelRow
 
 
 parseLevelRow row =
-    row |> String.toList |> (List.map parseLevelChar) |> List.indexedMap (,)
+    row |> String.toList |> (List.map parseLevelChar)
 
 
+parseLevelChar : Char -> Tile
 parseLevelChar char =
     case char of
         '#' ->
