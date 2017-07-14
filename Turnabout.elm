@@ -64,7 +64,7 @@ levelStart : Model
 levelStart =
     { gravity = South
     , board = exampleLevel
-    , moves = [ CounterClockwise, CounterClockwise, Clockwise ]
+    , moves = []
     }
 
 
@@ -103,10 +103,10 @@ rotationsFromCode : Int -> Msg
 rotationsFromCode keyCode =
     case keyCode of
         37 ->
-            Rotate Clockwise
+            Rotate CounterClockwise
 
         39 ->
-            Rotate CounterClockwise
+            Rotate Clockwise
 
         _ ->
             NoOp
@@ -141,17 +141,28 @@ view : Model -> Html msg
 view model =
     let
         levelSize =
-            Levels.size model.board
+            Levels.size (Debug.log "the board" model.board)
 
-        -- @TODO change back to this when generating SVG from levels programatically: (levelSize.width * size // 2)
         xCenter =
-            (5 * size // 2)
+            (levelSize.width * size // 2)
 
         yCenter =
             (levelSize.height * size // 2)
 
         rotation =
             Rotation (reduceMoves model.moves) xCenter yCenter
+
+        svgPlayfield =
+            model.board
+                |> List.indexedMap
+                    (\y row ->
+                        List.indexedMap
+                            (\x tile ->
+                                convertTileToSvg tile ( x, y )
+                            )
+                            row
+                    )
+                |> List.concatMap identity
     in
         Html.div [ Html.Attributes.style [ ( "margin", "1em auto" ) ] ]
             [ svg
@@ -163,41 +174,27 @@ view model =
                 , preserveAspectRatio "xMaxYMin meet"
                 ]
                 [ g [ transform ("translate(100 100) " ++ transformString rotation) ]
-                    [ svgWall ( 1, 3 )
-                    , svgWall ( 2, 3 )
-                    , svgWall ( 0, 3 )
-                    , svgWall ( 0, 2 )
-                    , svgWall ( 0, 1 )
-                    , svgWall ( 0, 0 )
-                    , svgWall ( 1, 0 )
-                    , svgWall ( 2, 0 )
-                    , svgWall ( 3, 0 )
-                    , svgWall ( 4, 0 )
-                    , svgWall ( 4, 1 )
-                    , svgWall ( 4, 2 )
-                    , svgWall ( 4, 3 )
-                    , svgWall ( 2, 2 )
-                    , svgWall ( 3, 3 )
-                    , svgMarble ( 3, 2 )
-                    ]
+                    svgPlayfield
                 ]
             ]
 
 
-svgWall : ( Int, Int ) -> Svg msg
-svgWall ( gridX, gridY ) =
+type alias Point = (Int, Int)
+
+svgSquare : Point -> String -> Svg msg
+svgSquare ( gridX, gridY ) color =
     rect
-        [ fill reddishString
+        [ fill color
         , x (toString (gridX * size))
         , y (toString (gridY * size))
         , width (toString size)
         , height (toString size)
-        , stroke reddishString
+        , stroke color
         ]
         []
 
 
-svgMarble : ( Int, Int ) -> Svg msg
+svgMarble : Point -> Svg msg
 svgMarble ( x, y ) =
     circle
         [ fill blue
@@ -208,28 +205,26 @@ svgMarble ( x, y ) =
         []
 
 
-toSvg field =
-    let
-        mapRowsToSvg =
-            List.indexedMap
-    in
-        List.map mapRowsToSvg field
-
-
-convertTileToSvg : Levels.Tile -> Svg msg
-convertTileToSvg tile =
+convertTileToSvg : Levels.Tile -> Point -> Svg msg
+convertTileToSvg tile coordinates =
     case tile of
         Levels.Wall ->
-            svgWall ( 1, 3 )
+            svgSquare coordinates reddishString
 
         Levels.Block ->
-            svgMarble ( 3, 2 )
+            svgSquare coordinates "tan"
 
         Levels.Marble color ->
-            svgMarble ( 3, 2 )
+            svgMarble coordinates
+
+        Levels.Goal color ->
+            svgSquare coordinates blue
+
+        Levels.Floor ->
+            svgSquare coordinates "lightgray"
 
         Levels.Empty ->
-            svgWall ( 1, 3 )
+            svgSquare coordinates "white"
 
 
 
