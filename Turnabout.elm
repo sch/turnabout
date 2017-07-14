@@ -5,7 +5,7 @@ import Svg.Attributes exposing (..)
 import Html exposing (Html)
 import Html.Attributes
 import Color exposing (..)
-import Levels exposing (exampleLevel)
+import Levels
 import Keyboard
 
 
@@ -55,7 +55,7 @@ type Rotation
 
 type alias Model =
     { gravity : Cardinality
-    , board : Levels.Level
+    , currentLevel : Int
     , moves : List Rotation
     }
 
@@ -63,7 +63,7 @@ type alias Model =
 levelStart : Model
 levelStart =
     { gravity = South
-    , board = exampleLevel
+    , currentLevel = 5
     , moves = []
     }
 
@@ -140,8 +140,10 @@ transformString trans =
 view : Model -> Html msg
 view model =
     let
+        level = Levels.get model.currentLevel
+
         levelSize =
-            Levels.size (Debug.log "the board" model.board)
+            Levels.size level
 
         xCenter =
             (levelSize.width * size // 2)
@@ -153,7 +155,7 @@ view model =
             Rotation (reduceMoves model.moves) xCenter yCenter
 
         svgPlayfield =
-            model.board
+            level
                 |> List.indexedMap
                     (\y row ->
                         List.indexedMap

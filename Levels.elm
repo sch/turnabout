@@ -1,4 +1,4 @@
-module Levels exposing (exampleLevel, parseLevelString, size, Tile(..), Level)
+module Levels exposing (Tile(..), Level, get, size, all)
 
 
 type MarbleColor
@@ -31,17 +31,13 @@ size level =
     }
 
 
-exampleLevel =
-    parseLevelString six
-
-
 one =
     """
 ########
-#      #
-#      #
-#      #
-#r #R  #
+#......#
+#......#
+#......#
+#r.#R..#
 ########
 """
 
@@ -179,6 +175,18 @@ ten =
 #..........#
 ############
 """
+
+
+all =
+    List.map parseLevelString [ one, two, three, four, five, six, seven, eight, nine, ten ]
+
+
+get : Int -> Level
+get number =
+    all
+        |> List.drop (number - 1)
+        |> List.head
+        |> Maybe.withDefault (parseLevelString one)
 
 
 parseLevelString : String -> Level
