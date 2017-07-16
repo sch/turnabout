@@ -3,6 +3,7 @@ module View exposing (boardView)
 import Svg exposing (..)
 import Svg.Attributes exposing (..)
 import Color exposing (..)
+import Animation exposing (Angle)
 import Levels exposing (Level)
 
 
@@ -32,21 +33,17 @@ type Transform
     | Translate Int Int
 
 
-boardView : Level -> Int -> Svg msg
-boardView level rotation =
+css =
+    """
+g {
+    transform-origin: center;
+}
+"""
+
+
+boardView : Level -> Animation.State -> Svg msg
+boardView level animatedStyles =
     let
-        levelSize =
-            Debug.log "thingy" Levels.size level
-
-        xCenter =
-            (levelSize.width * size // 2)
-
-        yCenter =
-            (levelSize.height * size // 2)
-
-        rotationalTransform =
-            Rotation rotation xCenter yCenter
-
         svgPlayfield =
             level
                 |> List.indexedMap
@@ -58,29 +55,18 @@ boardView level rotation =
                             row
                     )
                 |> List.concatMap identity
-
     in
         svg
             [ version "1.1"
             , x "0"
             , y "0"
             , width "100%"
-            , viewBox "0 0 500 500"
+            , viewBox "-100 -100 400 400"
             , preserveAspectRatio "xMaxYMin meet"
             ]
-            [ g [ transform ("translate(100 100) " ++ transformString rotationalTransform) ]
-                svgPlayfield
+            [ Svg.style [] [ Svg.text css ]
+            , g (Animation.render animatedStyles) svgPlayfield
             ]
-
-
-transformString : Transform -> String
-transformString trans =
-    case trans of
-        Rotation degrees x y ->
-            "rotate(" ++ (toString degrees) ++ " " ++ (toString x) ++ " " ++ (toString y) ++ ")"
-
-        Translate x y ->
-            "translate(" ++ (toString x) ++ "px, " ++ (toString y) ++ "px)"
 
 
 type alias Point =

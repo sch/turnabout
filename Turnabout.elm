@@ -3,6 +3,7 @@ module Turnabout exposing (initialState, view, update, subscriptions)
 import Levels
 import View exposing (boardView)
 import Keyboard
+import Animation exposing (Angle, deg)
 
 
 type Rotation
@@ -24,6 +25,7 @@ type Cardinality
 
 type Msg
     = Rotate Rotation
+    | Animate Animation.Msg
     | NoOp
 
 
@@ -37,6 +39,7 @@ type alias Model =
     { gravity : Cardinality
     , currentLevel : Int
     , moves : List Rotation
+    , style : Animation.State
     }
 
 
@@ -45,6 +48,10 @@ initialState =
     { gravity = South
     , currentLevel = 5
     , moves = []
+    , style =
+        Animation.styleWith
+            (Animation.spring { stiffness = 250, damping = 23 })
+            [ Animation.rotate (deg 0) ]
     }
 
 
@@ -52,7 +59,23 @@ update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case msg of
         Rotate rotation ->
-            ( { model | moves = rotation :: model.moves }, Cmd.none )
+            let
+                moves =
+                    rotation :: model.moves
+
+                degrees =
+                    reduceMoves moves |> toFloat |> deg
+
+                animationSteps =
+                    Animation.to [ Animation.rotate degrees ]
+
+                style =
+                    Animation.queue [ animationSteps ] model.style
+            in
+                ( { model | moves = moves, style = style }, Cmd.none )
+
+        Animate amount ->
+            ( { model | style = Animation.update amount model.style }, Cmd.none )
 
         NoOp ->
             ( model, Cmd.none )
@@ -60,7 +83,10 @@ update msg model =
 
 subscriptions : Model -> Sub Msg
 subscriptions model =
-    Keyboard.downs rotationsFromCode
+    Sub.batch
+        [ Keyboard.downs rotationsFromCode
+        , Animation.subscription Animate [ model.style ]
+        ]
 
 
 rotationsFromCode : Int -> Msg
@@ -77,17 +103,7 @@ rotationsFromCode keyCode =
 
 
 view model =
-    let
-        level =
-            Levels.get model.currentLevel
-
-        rotation =
-            reduceMoves model.moves
-
-        previousRotation =
-            reduceMoves (List.tail model.moves |> Maybe.withDefault [])
-    in
-        boardView level rotation
+    boardView (Levels.get model.currentLevel) model.style
 
 
 rotationInDegrees : Rotation -> Int
