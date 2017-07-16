@@ -26,6 +26,7 @@ type Cardinality
 type Msg
     = Rotate Rotation
     | Animate Animation.Msg
+    | Undo
     | NoOp
 
 
@@ -46,7 +47,7 @@ type alias Model =
 initialState : Model
 initialState =
     { gravity = South
-    , currentLevel = 5
+    , currentLevel = 10
     , moves = []
     , style =
         Animation.styleWith
@@ -63,14 +64,18 @@ update msg model =
                 moves =
                     rotation :: model.moves
 
-                degrees =
-                    reduceMoves moves |> toFloat |> deg
+                style =
+                    animateRotation moves model.style
+            in
+                ( { model | moves = moves, style = style }, Cmd.none )
 
-                animationSteps =
-                    Animation.to [ Animation.rotate degrees ]
+        Undo ->
+            let
+                moves =
+                    List.tail model.moves |> Maybe.withDefault []
 
                 style =
-                    Animation.queue [ animationSteps ] model.style
+                    animateRotation moves model.style
             in
                 ( { model | moves = moves, style = style }, Cmd.none )
 
@@ -79,6 +84,18 @@ update msg model =
 
         NoOp ->
             ( model, Cmd.none )
+
+
+animateRotation : List Rotation -> Animation.State -> Animation.State
+animateRotation moves style =
+    let
+        degrees =
+            reduceMoves moves |> toFloat |> deg
+
+        animationSteps =
+            Animation.to [ Animation.rotate degrees ]
+    in
+        Animation.queue [ animationSteps ] style
 
 
 subscriptions : Model -> Sub Msg
@@ -97,6 +114,9 @@ rotationsFromCode keyCode =
 
         39 ->
             Rotate Clockwise
+
+        85 ->
+            Undo
 
         _ ->
             NoOp
