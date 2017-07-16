@@ -1,23 +1,18 @@
-module Turnabout exposing (main, Model)
+module Turnabout exposing (initialState, view, update, subscriptions)
 
-import Html exposing (Html)
 import Levels
 import View exposing (boardView)
 import Keyboard
 
 
-main =
-    Html.program
-        { init = ( levelStart, Cmd.none )
-        , view = view
-        , update = update
-        , subscriptions = subscriptions
-        }
-
-
 type Rotation
     = Clockwise
     | CounterClockwise
+
+
+type BoardMove
+    = ClockwiseFrom Cardinality
+    | CounterClockwiseFrom Cardinality
 
 
 type Cardinality
@@ -27,6 +22,17 @@ type Cardinality
     | West
 
 
+type Msg
+    = Rotate Rotation
+    | NoOp
+
+
+type Key
+    = LeftArrow
+    | RightArrow
+    | Other
+
+
 type alias Model =
     { gravity : Cardinality
     , currentLevel : Int
@@ -34,17 +40,12 @@ type alias Model =
     }
 
 
-levelStart : Model
-levelStart =
+initialState : Model
+initialState =
     { gravity = South
     , currentLevel = 5
     , moves = []
     }
-
-
-type Msg
-    = Rotate Rotation
-    | NoOp
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
@@ -60,12 +61,6 @@ update msg model =
 subscriptions : Model -> Sub Msg
 subscriptions model =
     Keyboard.downs rotationsFromCode
-
-
-type Key
-    = LeftArrow
-    | RightArrow
-    | Other
 
 
 rotationsFromCode : Int -> Msg
@@ -88,6 +83,9 @@ view model =
 
         rotation =
             reduceMoves model.moves
+
+        previousRotation =
+            reduceMoves (List.tail model.moves |> Maybe.withDefault [])
     in
         boardView level rotation
 
