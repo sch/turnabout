@@ -33,17 +33,23 @@ type Transform
     | Translate Int Int
 
 
-css =
-    """
-g {
-    transform-origin: center;
-}
-"""
+inlineStyles : Svg.Attribute msg
+inlineStyles =
+    Svg.Attributes.style "transform-origin: center"
 
 
 boardView : Level -> Animation.State -> Svg msg
 boardView level animatedStyles =
     let
+        svgAttributes =
+            [ version "1.1"
+            , x "0"
+            , y "0"
+            , width "100%"
+            , viewBox "-100 -100 400 400"
+            , preserveAspectRatio "xMaxYMin meet"
+            ]
+
         svgPlayfield =
             level
                 |> List.indexedMap
@@ -55,18 +61,11 @@ boardView level animatedStyles =
                             row
                     )
                 |> List.concatMap identity
+
+        boardAttributes =
+            inlineStyles :: (Animation.render animatedStyles)
     in
-        svg
-            [ version "1.1"
-            , x "0"
-            , y "0"
-            , width "100%"
-            , viewBox "-100 -100 400 400"
-            , preserveAspectRatio "xMaxYMin meet"
-            ]
-            [ Svg.style [] [ Svg.text css ]
-            , g (Animation.render animatedStyles) svgPlayfield
-            ]
+        svg svgAttributes [ g boardAttributes svgPlayfield ]
 
 
 type alias Point =
