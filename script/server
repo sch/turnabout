@@ -1,5 +1,11 @@
 #!/bin/sh
 
-set +x
+# script/server: Run the development server
 
-elm reactor --port=8989
+set -e
+
+cd "$(dirname "$0")/.."
+
+script/bootstrap
+
+npm start
