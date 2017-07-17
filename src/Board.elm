@@ -1,7 +1,8 @@
 module Board exposing (view)
 
-import Svg exposing (..)
+import Svg exposing (Svg)
 import Svg.Attributes exposing (..)
+import Svg.Lazy exposing (lazy)
 import Color exposing (..)
 import Color.Convert exposing (colorToHex)
 import Animation exposing (Angle)
@@ -24,7 +25,7 @@ blue =
 
 size : Int
 size =
-    20
+    10
 
 
 type Rotation
@@ -44,37 +45,40 @@ inlineStyles =
 
 view : Level -> Animation.State -> Svg msg
 view level animatedStyles =
-    svg
+    Svg.svg
         [ version "1.1"
         , x "0"
         , y "0"
         , width "100%"
-        , viewBox "-200 -100 600 400"
+        , height "100%"
+        , viewBox "-100 -50 300 200"
         , preserveAspectRatio "xMaxYMin meet"
         , Svg.Attributes.style "background-color: #FAFEFA"
+        , shapeRendering "crispEdges"
         ]
         [ theBoardItself level animatedStyles ]
 
 
 theBoardItself : Level -> Animation.State -> Svg msg
 theBoardItself level animatedStyles =
+    Svg.g (inlineStyles :: (Animation.render animatedStyles)) [ (lazy boardTiles level) ]
+
+
+boardTiles : Level -> Svg msg
+boardTiles level =
     let
-        svgPlayfield =
+        _ =
+            Debug.log "still getting called?" level
+
+        tiles =
             level
                 |> List.indexedMap
                     (\y row ->
-                        List.indexedMap
-                            (\x tile ->
-                                convertTileToSvg tile ( x, y )
-                            )
-                            row
+                        List.indexedMap (\x tile -> convertTileToSvg tile ( x, y )) row
                     )
                 |> List.concatMap identity
-
-        boardAttributes =
-            inlineStyles :: (Animation.render animatedStyles)
     in
-        g boardAttributes svgPlayfield
+        Svg.g [] tiles
 
 
 type alias Point =
@@ -83,7 +87,7 @@ type alias Point =
 
 svgSquare : Point -> Color -> Svg msg
 svgSquare ( gridX, gridY ) color =
-    rect
+    Svg.rect
         [ fill (colorToHex color)
         , x (toString (gridX * size - 1))
         , y (toString (gridY * size - 1))
@@ -95,13 +99,13 @@ svgSquare ( gridX, gridY ) color =
 
 svgMarble : Point -> Svg msg
 svgMarble ( x, y ) =
-    g []
+    Svg.g []
         [ svgSquare ( x, y ) Color.lightGray
-        , circle
+        , Svg.circle
             [ fill (colorToHex blue)
             , cx (toString ((x * size - 1) + (size // 2)))
             , cy (toString ((y * size - 1) + (size // 2)))
-            , r (toString ((size - 2) // 2))
+            , r (toString ((size - 1) // 2))
             ]
             []
         ]
