@@ -1,12 +1,16 @@
-module Board exposing (view)
+module Board exposing (Msg, State, initialState, rotate, update, subscriptions, view)
 
+import Animation exposing (Angle, deg)
+import Color exposing (..)
+import Color.Convert exposing (colorToHex)
 import Svg exposing (Svg)
 import Svg.Attributes exposing (..)
 import Svg.Lazy exposing (lazy)
-import Color exposing (..)
-import Color.Convert exposing (colorToHex)
-import Animation exposing (Angle)
 import Levels exposing (Level)
+import Turnabout.Types exposing (Rotation(Clockwise, CounterClockwise), Moves)
+
+
+-- CONFIGURATION
 
 
 reddish : Color
@@ -19,28 +23,104 @@ blue =
     rgb 32 22 129
 
 
-
-{- This is how wide/tall each tile should be (pixel) -}
-
-
 size : Int
 size =
     10
 
 
-type Rotation
-    = Clockwise
-    | CounterClockwise
+springConfig =
+    { stiffness = 200, damping = 21 }
 
 
-type Transform
-    = Rotation Int Int Int
-    | Translate Int Int
+
+-- TYPES
 
 
-inlineStyles : Svg.Attribute msg
-inlineStyles =
-    Svg.Attributes.style "transform-origin: center"
+type alias Point =
+    ( Int, Int )
+
+
+type alias State =
+    Animation.State
+
+
+type Msg
+    = Animate Animation.Msg
+    | Rotate Moves
+
+
+
+-- STATE
+
+
+initialState : State
+initialState =
+    Animation.styleWith
+        (Animation.spring springConfig)
+        [ Animation.rotate (deg 0) ]
+
+
+
+-- COMMANDS
+
+
+rotate : Moves -> Msg
+rotate moves =
+    Rotate moves
+
+
+
+-- UPDATE
+
+
+update : Msg -> State -> ( State, Cmd Msg )
+update msg state =
+    case msg of
+        Rotate moves ->
+            ( animateRotation moves state, Cmd.none )
+
+        Animate amount ->
+            ( Animation.update amount state, Cmd.none )
+
+
+animateRotation : Moves -> Animation.State -> Animation.State
+animateRotation moves style =
+    let
+        degrees =
+            reduceMoves moves |> toFloat |> deg
+
+        animationSteps =
+            Animation.to [ Animation.rotate degrees ]
+    in
+        Animation.queue [ animationSteps ] style
+
+
+rotationInDegrees : Rotation -> Int
+rotationInDegrees rotation =
+    case rotation of
+        Clockwise ->
+            90
+
+        CounterClockwise ->
+            -90
+
+
+reduceMoves : Moves -> Int
+reduceMoves moves =
+    List.foldl (+) 0 (List.map rotationInDegrees moves)
+
+
+
+-- SUBSCRIPTIONS
+
+
+subscriptions : State -> Sub Msg
+subscriptions state =
+    Animation.subscription Animate [ state ]
+
+
+
+-- VIEW
 
 
 view : Level -> Animation.State -> Svg msg
@@ -57,6 +137,11 @@ view level animatedStyles =
         , shapeRendering "crispEdges"
         ]
         [ theBoardItself level animatedStyles ]
+
+
+inlineStyles : Svg.Attribute msg
+inlineStyles =
+    Svg.Attributes.style "transform-origin: center"
 
 
 theBoardItself : Level -> Animation.State -> Svg msg
@@ -76,10 +161,6 @@ boardTiles level =
                 |> List.concatMap identity
     in
         Svg.g [] tiles
-
-
-type alias Point =
-    ( Int, Int )
 
 
 svgSquare : Point -> Color -> Svg msg

@@ -1,18 +1,14 @@
 module Turnabout exposing (Model, Msg, initialState, view, update, subscriptions)
 
-import Levels
 import Board
-import Keyboard
 import Html exposing (Html)
 import Html.Attributes as Attributes
 import Html.Events as Events
-import Animation exposing (Angle, deg)
+import Keyboard
+import Levels
 import Octicons
-
-
-type Rotation
-    = Clockwise
-    | CounterClockwise
+import Task
+import Turnabout.Types exposing (Rotation(Clockwise, CounterClockwise), Moves)
 
 
 type BoardMove
@@ -29,7 +25,7 @@ type Cardinality
 
 type Msg
     = Rotate Rotation
-    | Animate Animation.Msg
+    | BoardMessage Board.Msg
     | Undo
     | NoOp
 
@@ -43,8 +39,8 @@ type Key
 type alias Model =
     { gravity : Cardinality
     , currentLevel : Int
-    , moves : List Rotation
-    , style : Animation.State
+    , moves : Moves
+    , board : Board.State
     }
 
 
@@ -53,10 +49,7 @@ initialState =
     { gravity = South
     , currentLevel = 10
     , moves = []
-    , style =
-        Animation.styleWith
-            (Animation.spring { stiffness = 200, damping = 21 })
-            [ Animation.rotate (deg 0) ]
+    , board = Board.initialState
     }
 
 
@@ -67,51 +60,42 @@ update msg model =
             let
                 moves =
                     rotation :: model.moves
-
-                style =
-                    animateRotation moves model.style
             in
-                ( { model | moves = moves, style = style }, Cmd.none )
+                ( { model | moves = moves }, rotateCommand moves )
 
         Undo ->
             let
                 moves =
                     List.tail model.moves |> Maybe.withDefault []
-
-                style =
-                    animateRotation moves model.style
             in
-                ( { model | moves = moves, style = style }, Cmd.none )
+                ( { model | moves = moves }, rotateCommand moves )
 
-        Animate amount ->
-            ( { model | style = Animation.update amount model.style }, Cmd.none )
+        BoardMessage boardMsg ->
+            let
+                ( board, command ) =
+                    Board.update boardMsg model.board
+            in
+                ( { model | board = board }, Cmd.map BoardMessage command )
 
         NoOp ->
             ( model, Cmd.none )
 
 
-animateRotation : List Rotation -> Animation.State -> Animation.State
-animateRotation moves style =
-    let
-        degrees =
-            reduceMoves moves |> toFloat |> deg
-
-        animationSteps =
-            Animation.to [ Animation.rotate degrees ]
-    in
-        Animation.queue [ animationSteps ] style
+rotateCommand : Moves -> Cmd Msg
+rotateCommand moves =
+    Task.perform (BoardMessage << Board.rotate) (Task.succeed moves)
 
 
 subscriptions : Model -> Sub Msg
 subscriptions model =
     Sub.batch
-        [ Keyboard.downs rotationsFromCode
-        , Animation.subscription Animate [ model.style ]
+        [ Keyboard.downs messagesFromCode
+        , Board.subscriptions model.board |> Sub.map BoardMessage
         ]
 
 
-rotationsFromCode : Int -> Msg
-rotationsFromCode keyCode =
+messagesFromCode : Int -> Msg
+messagesFromCode keyCode =
     case keyCode of
         37 ->
             Rotate CounterClockwise
@@ -129,26 +113,11 @@ rotationsFromCode keyCode =
 view : Model -> Html Msg
 view model =
     Html.div [ Attributes.style [ ( "position", "relative" ) ] ]
-        [ Board.view (Levels.get model.currentLevel) model.style
+        [ Board.view (Levels.get model.currentLevel) model.board
         , absolutelyPositioned [ ( "top", "10px" ), ( "right", "10px" ) ] (button Undo)
         , absolutelyPositioned [ ( "bottom", "10px" ), ( "left", "10px" ) ] (button (Rotate CounterClockwise))
         , absolutelyPositioned [ ( "bottom", "10px" ), ( "right", "10px" ) ] (button (Rotate Clockwise))
         ]
-
-
-rotationInDegrees : Rotation -> Int
-rotationInDegrees rotation =
-    case rotation of
-        Clockwise ->
-            90
-
-        CounterClockwise ->
-            -90
-
-
-reduceMoves : List Rotation -> Int
-reduceMoves moves =
-    List.foldl (+) 0 (List.map rotationInDegrees moves)
 
 
 absolutelyPositioned : List ( String, String ) -> Html msg -> Html msg
