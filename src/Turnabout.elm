@@ -49,7 +49,7 @@ type alias Model =
 initialState : Model
 initialState =
     { gravity = South
-    , currentLevel = Nothing
+    , currentLevel = Just 3
     , moves = []
     , board = Board.initialState
     }
@@ -147,7 +147,7 @@ levelSelectView model =
         li num =
             Html.li
                 [ Events.onClick (SelectLevel num)
-                , Attributes.style [ ( "padding", "10px" ) ]
+                , Attributes.style [ ( "padding", "10px" ), ( "cursor", "pointer" ) ]
                 ]
                 [ Html.text ("level " ++ (toString num)) ]
     in
@@ -189,8 +189,7 @@ levelView level board =
 absolutelyPositioned : List ( String, String ) -> Html msg -> Html msg
 absolutelyPositioned styles node =
     Html.div
-        [ Attributes.style (List.append styles [ ( "position", "absolute" ) ])
-        ]
+        [ Attributes.style (List.append styles [ ( "position", "absolute" ) ]) ]
         [ node ]
 
 
@@ -215,13 +214,14 @@ button msg =
                     Octicons.issueReopened
 
         iconOptions =
-            Octicons.defaultOptions |> Octicons.size 30
+            Octicons.defaultOptions |> Octicons.size 30 |> Octicons.color "#555"
 
         styles =
             [ ( "background-color", "rgba(255, 255, 255, 0.5)" )
             , ( "border", "none" )
             , ( "border-radius", "3px" )
             , ( "padding", "15px" )
+            , ( "cursor", "pointer" )
             ]
 
         attributes =

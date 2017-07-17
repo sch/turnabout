@@ -25,7 +25,7 @@ blue =
 
 size : Int
 size =
-    10
+    20
 
 
 springConfig =
@@ -131,10 +131,10 @@ view level animatedStyles =
         , y "0"
         , width "100%"
         , height "100%"
-        , viewBox "-100 -50 300 200"
+        , viewBox "-150 -50 500 300"
         , preserveAspectRatio "xMaxYMin meet"
         , Svg.Attributes.style "background-color: #FAFEFA"
-        , shapeRendering "crispEdges"
+        , style "background-color: #666"
         ]
         [ theBoardItself level animatedStyles ]
 
@@ -167,10 +167,10 @@ svgSquare : Point -> Color -> Svg msg
 svgSquare ( gridX, gridY ) color =
     Svg.rect
         [ fill (colorToHex color)
-        , x (toString (gridX * size - 1))
-        , y (toString (gridY * size - 1))
-        , width (toString (size - 1))
-        , height (toString (size - 1))
+        , x (toString (gridX * size + 1))
+        , y (toString (gridY * size + 1))
+        , width (toString (size - 2))
+        , height (toString (size - 2))
         ]
         []
 
@@ -181,9 +181,9 @@ svgMarble ( x, y ) =
         [ svgSquare ( x, y ) Color.lightGray
         , Svg.circle
             [ fill (colorToHex blue)
-            , cx (toString ((x * size - 1) + (size // 2)))
-            , cy (toString ((y * size - 1) + (size // 2)))
-            , r (toString ((size - 1) // 2))
+            , cx (toString ((x * size) + (size // 2)))
+            , cy (toString ((y * size) + (size // 2)))
+            , r (toString ((size) // 2))
             ]
             []
         ]
