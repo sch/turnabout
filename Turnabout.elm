@@ -1,7 +1,7 @@
 module Turnabout exposing (initialState, view, update, subscriptions)
 
 import Levels
-import View exposing (boardView)
+import Board
 import Keyboard
 import Animation exposing (Angle, deg)
 
@@ -123,7 +123,7 @@ rotationsFromCode keyCode =
 
 
 view model =
-    boardView (Levels.get model.currentLevel) model.style
+    Board.view (Levels.get model.currentLevel) model.style
 
 
 rotationInDegrees : Rotation -> Int

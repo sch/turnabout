@@ -1,4 +1,4 @@
-module View exposing (boardView)
+module Board exposing (view)
 
 import Svg exposing (..)
 import Svg.Attributes exposing (..)
@@ -38,18 +38,23 @@ inlineStyles =
     Svg.Attributes.style "transform-origin: center"
 
 
-boardView : Level -> Animation.State -> Svg msg
-boardView level animatedStyles =
-    let
-        svgAttributes =
-            [ version "1.1"
-            , x "0"
-            , y "0"
-            , width "100%"
-            , viewBox "-100 -100 400 400"
-            , preserveAspectRatio "xMaxYMin meet"
-            ]
+view : Level -> Animation.State -> Svg msg
+view level animatedStyles =
+    svg
+        [ version "1.1"
+        , x "0"
+        , y "0"
+        , width "100%"
+        , viewBox "-200 -100 600 400"
+        , preserveAspectRatio "xMaxYMin meet"
+        , Svg.Attributes.style "background-color: #FAFEFA"
+        ]
+        [ theBoardItself level animatedStyles ]
 
+
+theBoardItself : Level -> Animation.State -> Svg msg
+theBoardItself level animatedStyles =
+    let
         svgPlayfield =
             level
                 |> List.indexedMap
@@ -65,7 +70,8 @@ boardView level animatedStyles =
         boardAttributes =
             inlineStyles :: (Animation.render animatedStyles)
     in
-        svg svgAttributes [ g boardAttributes svgPlayfield ]
+        g boardAttributes svgPlayfield
+
 
 
 type alias Point =
@@ -76,23 +82,26 @@ svgSquare : Point -> String -> Svg msg
 svgSquare ( gridX, gridY ) color =
     rect
         [ fill color
-        , x (toString (gridX * size))
-        , y (toString (gridY * size))
-        , width (toString size)
-        , height (toString size)
+        , x (toString (gridX * size - 1))
+        , y (toString (gridY * size - 1))
+        , width (toString (size - 1))
+        , height (toString (size - 1))
         ]
         []
 
 
 svgMarble : Point -> Svg msg
 svgMarble ( x, y ) =
-    circle
-        [ fill blue
-        , cx (toString ((x * size) + (size // 2)))
-        , cy (toString ((y * size) + (size // 2)))
-        , r (toString (size / 2))
+    g []
+        [ svgSquare ( x, y ) "lightgray"
+        , circle
+            [ fill blue
+            , cx (toString ((x * size - 1) + (size // 2)))
+            , cy (toString ((y * size - 1) + (size // 2)))
+            , r (toString ((size - 2) / 2))
+            ]
+            []
         ]
-        []
 
 
 convertTileToSvg : Levels.Tile -> Point -> Svg msg
