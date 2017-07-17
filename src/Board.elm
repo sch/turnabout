@@ -67,9 +67,6 @@ theBoardItself level animatedStyles =
 boardTiles : Level -> Svg msg
 boardTiles level =
     let
-        _ =
-            Debug.log "still getting called?" level
-
         tiles =
             level
                 |> List.indexedMap

@@ -1,4 +1,4 @@
-module Turnabout exposing (initialState, view, update, subscriptions)
+module Turnabout exposing (Model, Msg, initialState, view, update, subscriptions)
 
 import Levels
 import Board
@@ -55,7 +55,7 @@ initialState =
     , moves = []
     , style =
         Animation.styleWith
-            (Animation.spring { stiffness = 250, damping = 23 })
+            (Animation.spring { stiffness = 200, damping = 21 })
             [ Animation.rotate (deg 0) ]
     }
 
