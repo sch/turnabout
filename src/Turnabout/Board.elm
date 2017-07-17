@@ -1,4 +1,4 @@
-module Board exposing (Msg, State, initialState, rotate, update, subscriptions, view)
+module Turnabout.Board exposing (Msg, State, initialState, rotate, update, subscriptions, view)
 
 import Animation exposing (Angle, deg)
 import Color exposing (..)
@@ -6,7 +6,7 @@ import Color.Convert exposing (colorToHex)
 import Svg exposing (Svg)
 import Svg.Attributes exposing (..)
 import Svg.Lazy exposing (lazy)
-import Levels exposing (Level)
+import Turnabout.Levels as Levels exposing (Level)
 import Turnabout.Types exposing (Rotation(Clockwise, CounterClockwise), Moves)
 
 

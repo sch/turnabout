@@ -1,13 +1,13 @@
 module Turnabout exposing (Model, Msg, initialState, view, update, subscriptions)
 
-import Board
 import Html exposing (Html)
 import Html.Attributes as Attributes
 import Html.Events as Events
 import Keyboard
-import Levels
 import Octicons
 import Task
+import Turnabout.Board as Board
+import Turnabout.Levels as Levels
 import Turnabout.Types exposing (Rotation(Clockwise, CounterClockwise), Moves)
 
 

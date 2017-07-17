@@ -1,4 +1,4 @@
-module Levels exposing (Tile(..), Level, get, size, all)
+module Turnabout.Levels exposing (Tile(..), Level, get, size, all)
 
 import Dict exposing (Dict)
 
@@ -213,7 +213,6 @@ parse levelString =
     let
         rows =
             levelString |> String.trim |> String.lines |> List.indexedMap parseHelp
-
     in
         empty
 
@@ -223,9 +222,8 @@ parseHelp rowIndex rowString =
     let
         pairs =
             rowString
-            |> String.toList
-            |> List.indexedMap (\colIndex char -> ((colIndex, rowIndex), parseLevelChar char))
-
+                |> String.toList
+                |> List.indexedMap (\colIndex char -> ( ( colIndex, rowIndex ), parseLevelChar char ))
     in
         { empty | board = Dict.fromList pairs }
 
