@@ -3,22 +3,26 @@ module Board exposing (view)
 import Svg exposing (..)
 import Svg.Attributes exposing (..)
 import Color exposing (..)
+import Color.Convert exposing (colorToHex)
 import Animation exposing (Angle)
 import Levels exposing (Level)
 
 
+reddish : Color
 reddish =
     rgb 208 73 66
 
 
-reddishString =
-    "rgb(208, 73, 66)"
-
-
+blue : Color
 blue =
-    "rgb(32, 22, 129)"
+    rgb 32 22 129
 
 
+
+{- This is how wide/tall each tile should be (pixel) -}
+
+
+size : Int
 size =
     20
 
@@ -73,15 +77,14 @@ theBoardItself level animatedStyles =
         g boardAttributes svgPlayfield
 
 
-
 type alias Point =
     ( Int, Int )
 
 
-svgSquare : Point -> String -> Svg msg
+svgSquare : Point -> Color -> Svg msg
 svgSquare ( gridX, gridY ) color =
     rect
-        [ fill color
+        [ fill (colorToHex color)
         , x (toString (gridX * size - 1))
         , y (toString (gridY * size - 1))
         , width (toString (size - 1))
@@ -93,12 +96,12 @@ svgSquare ( gridX, gridY ) color =
 svgMarble : Point -> Svg msg
 svgMarble ( x, y ) =
     g []
-        [ svgSquare ( x, y ) "lightgray"
+        [ svgSquare ( x, y ) Color.lightGray
         , circle
-            [ fill blue
+            [ fill (colorToHex blue)
             , cx (toString ((x * size - 1) + (size // 2)))
             , cy (toString ((y * size - 1) + (size // 2)))
-            , r (toString ((size - 2) / 2))
+            , r (toString ((size - 2) // 2))
             ]
             []
         ]
@@ -108,10 +111,10 @@ convertTileToSvg : Levels.Tile -> Point -> Svg msg
 convertTileToSvg tile coordinates =
     case tile of
         Levels.Wall ->
-            svgSquare coordinates reddishString
+            svgSquare coordinates reddish
 
         Levels.Block ->
-            svgSquare coordinates "tan"
+            svgSquare coordinates Color.lightBrown
 
         Levels.Marble color ->
             svgMarble coordinates
@@ -120,14 +123,7 @@ convertTileToSvg tile coordinates =
             svgSquare coordinates blue
 
         Levels.Floor ->
-            svgSquare coordinates "lightgray"
+            svgSquare coordinates Color.lightGray
 
         Levels.Empty ->
-            svgSquare coordinates "white"
-
-
-
--- toFill : Color -> String
--- toFill color =
---   case color of
---     RGBA r g b a -> "rgba(" ++ (toString r) ++ ", 1, 1, 1)"
+            svgSquare coordinates Color.white

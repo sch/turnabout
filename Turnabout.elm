@@ -3,7 +3,11 @@ module Turnabout exposing (initialState, view, update, subscriptions)
 import Levels
 import Board
 import Keyboard
+import Html exposing (Html)
+import Html.Attributes as Attributes
+import Html.Events as Events
 import Animation exposing (Angle, deg)
+import Octicons
 
 
 type Rotation
@@ -122,8 +126,14 @@ rotationsFromCode keyCode =
             NoOp
 
 
+view : Model -> Html Msg
 view model =
-    Board.view (Levels.get model.currentLevel) model.style
+    Html.div [ Attributes.style [ ( "position", "relative" ) ] ]
+        [ Board.view (Levels.get model.currentLevel) model.style
+        , absolutelyPositioned [ ( "top", "10px" ), ( "right", "10px" ) ] (button Undo)
+        , absolutelyPositioned [ ( "bottom", "10px" ), ( "left", "10px" ) ] (button (Rotate CounterClockwise))
+        , absolutelyPositioned [ ( "bottom", "10px" ), ( "right", "10px" ) ] (button (Rotate Clockwise))
+        ]
 
 
 rotationInDegrees : Rotation -> Int
@@ -139,3 +149,44 @@ rotationInDegrees rotation =
 reduceMoves : List Rotation -> Int
 reduceMoves moves =
     List.foldl (+) 0 (List.map rotationInDegrees moves)
+
+
+absolutelyPositioned : List ( String, String ) -> Html msg -> Html msg
+absolutelyPositioned styles node =
+    Html.div
+        [ Attributes.style (List.append styles [ ( "position", "absolute" ) ])
+        ]
+        [ node ]
+
+
+button : Msg -> Html Msg
+button msg =
+    let
+        icon =
+            case msg of
+                Rotate CounterClockwise ->
+                    Octicons.chevronLeft
+
+                Rotate Clockwise ->
+                    Octicons.chevronRight
+
+                Undo ->
+                    Octicons.issueReopened
+
+                _ ->
+                    Octicons.issueReopened
+
+        iconOptions =
+            Octicons.defaultOptions |> Octicons.size 30
+
+        styles =
+            [ ( "background-color", "rgba(255, 255, 255, 0.5)" )
+            , ( "border", "none" )
+            , ( "border-radius", "3px" )
+            , ( "padding", "15px" )
+            ]
+
+        attributes =
+            [ Attributes.style styles, Events.onClick msg ]
+    in
+        Html.button attributes [ icon iconOptions ]
