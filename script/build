@@ -1,5 +1,19 @@
-#!/bin/sh
+#!/bin/bash
 
-set +x
+# script/build: Build and upload to github pages
 
-elm-make Turnabout.elm
+set -e
+
+cd "$(dirname "$0")/.."
+
+elm-make Main.elm --output build/index.html
+
+TEMPORARY_DIRECTORY=`mktemp -d`
+cp -r build/. $TEMPORARY_DIRECTORY
+cd $TEMPORARY_DIRECTORY
+
+git init
+git add .
+git commit -m "Build commit"
+git remote add origin git@github.com:sch/turnabout.git
+git push origin HEAD:gh-pages --force
