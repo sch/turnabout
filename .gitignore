@@ -1,4 +1,4 @@
 .DS_Store
 elm-stuff
 elm.js
-build
+build/main.js

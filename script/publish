@@ -1,12 +1,12 @@
 #!/bin/bash
 
-# script/build: Build and upload to github pages
+# script/publish: Build and upload to github pages
 
 set -e
 
 cd "$(dirname "$0")/.."
 
-elm-make Main.elm --output build/index.html
+elm-make Main.elm --output build/main.js
 
 TEMPORARY_DIRECTORY=`mktemp -d`
 cp -r build/. $TEMPORARY_DIRECTORY
