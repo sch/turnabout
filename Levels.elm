@@ -1,7 +1,9 @@
 module Levels exposing (Tile(..), Level, get, size, all)
 
+import Dict exposing (Dict)
 
-type MarbleColor
+
+type Color
     = Red
     | Green
     | Blue
@@ -10,8 +12,8 @@ type MarbleColor
 type Tile
     = Wall
     | Block
-    | Marble MarbleColor
-    | Goal MarbleColor
+    | Marble Color
+    | Goal Color
     | Floor
     | Empty
 
@@ -187,6 +189,45 @@ get number =
         |> List.drop (number - 1)
         |> List.head
         |> Maybe.withDefault (parseLevelString one)
+
+
+type alias Coordinate =
+    ( Int, Int )
+
+
+type alias LayeredLevel =
+    { board : Dict Coordinate Tile
+    , movables : List (Dict Coordinate Tile)
+    }
+
+
+empty : LayeredLevel
+empty =
+    { board = Dict.empty
+    , movables = []
+    }
+
+
+parse : String -> LayeredLevel
+parse levelString =
+    let
+        rows =
+            levelString |> String.trim |> String.lines |> List.indexedMap parseHelp
+
+    in
+        empty
+
+
+parseHelp : Int -> String -> LayeredLevel
+parseHelp rowIndex rowString =
+    let
+        pairs =
+            rowString
+            |> String.toList
+            |> List.indexedMap (\colIndex char -> ((colIndex, rowIndex), parseLevelChar char))
+
+    in
+        { empty | board = Dict.fromList pairs }
 
 
 parseLevelString : String -> Level
