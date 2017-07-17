@@ -25,8 +25,10 @@ type Cardinality
 
 type Msg
     = Rotate Rotation
-    | BoardMessage Board.Msg
     | Undo
+    | BoardMessage Board.Msg
+    | SelectLevel Int
+    | ViewLevelSelect
     | NoOp
 
 
@@ -38,7 +40,7 @@ type Key
 
 type alias Model =
     { gravity : Cardinality
-    , currentLevel : Int
+    , currentLevel : Maybe Int
     , moves : Moves
     , board : Board.State
     }
@@ -47,7 +49,7 @@ type alias Model =
 initialState : Model
 initialState =
     { gravity = South
-    , currentLevel = 10
+    , currentLevel = Nothing
     , moves = []
     , board = Board.initialState
     }
@@ -69,6 +71,12 @@ update msg model =
                     List.tail model.moves |> Maybe.withDefault []
             in
                 ( { model | moves = moves }, rotateCommand moves )
+
+        SelectLevel levelNumber ->
+            ( { model | currentLevel = Just levelNumber }, Cmd.none )
+
+        ViewLevelSelect ->
+            ( { model | currentLevel = Nothing }, Cmd.none )
 
         BoardMessage boardMsg ->
             let
@@ -112,12 +120,70 @@ messagesFromCode keyCode =
 
 view : Model -> Html Msg
 view model =
-    Html.div [ Attributes.style [ ( "position", "relative" ) ] ]
-        [ Board.view (Levels.get model.currentLevel) model.board
-        , absolutelyPositioned [ ( "top", "10px" ), ( "right", "10px" ) ] (button Undo)
-        , absolutelyPositioned [ ( "bottom", "10px" ), ( "left", "10px" ) ] (button (Rotate CounterClockwise))
-        , absolutelyPositioned [ ( "bottom", "10px" ), ( "right", "10px" ) ] (button (Rotate Clockwise))
-        ]
+    case model.currentLevel of
+        Just levelNumber ->
+            levelView (Levels.get levelNumber) model.board
+
+        Nothing ->
+            levelSelectView model
+
+
+levelSelectView : Model -> Html Msg
+levelSelectView model =
+    let
+        styles =
+            [ ( "font-family", """
+            -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol"
+            """ )
+            , ( "color", "#555" )
+            , ( "text-align", "center" )
+            , ( "text-decoration", "none" )
+            , ( "padding", "30px" )
+            ]
+
+        levelCount =
+            List.length Levels.all
+
+        li num =
+            Html.li
+                [ Events.onClick (SelectLevel num)
+                , Attributes.style [ ( "padding", "10px" ) ]
+                ]
+                [ Html.text ("level " ++ (toString num)) ]
+    in
+        Html.div
+            [ Attributes.style styles ]
+            [ Html.ul
+                [ Attributes.style [ ( "list-style", "none" ) ] ]
+                (List.range 1 levelCount |> List.map li)
+            ]
+
+
+levelView : Levels.Level -> Board.State -> Html Msg
+levelView level board =
+    let
+        offset =
+            "16px"
+
+        topLeft =
+            absolutelyPositioned [ ( "top", offset ), ( "left", offset ) ]
+
+        topRight =
+            absolutelyPositioned [ ( "top", offset ), ( "right", offset ) ]
+
+        bottomLeft =
+            absolutelyPositioned [ ( "bottom", offset ), ( "left", offset ) ]
+
+        bottomRight =
+            absolutelyPositioned [ ( "bottom", offset ), ( "right", offset ) ]
+    in
+        Html.div [ Attributes.style [ ( "position", "relative" ) ] ]
+            [ Board.view level board
+            , button ViewLevelSelect |> topLeft
+            , button Undo |> topRight
+            , button (Rotate CounterClockwise) |> bottomLeft
+            , button (Rotate Clockwise) |> bottomRight
+            ]
 
 
 absolutelyPositioned : List ( String, String ) -> Html msg -> Html msg
@@ -141,6 +207,9 @@ button msg =
 
                 Undo ->
                     Octicons.issueReopened
+
+                ViewLevelSelect ->
+                    Octicons.listUnordered
 
                 _ ->
                     Octicons.issueReopened
