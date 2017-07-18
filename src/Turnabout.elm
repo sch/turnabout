@@ -49,7 +49,7 @@ type alias Model =
 initialState : Model
 initialState =
     { gravity = South
-    , currentLevel = Just 3
+    , currentLevel = Nothing
     , moves = []
     , board = Board.initialState
     }
@@ -73,10 +73,18 @@ update msg model =
                 ( { model | moves = moves }, rotateCommand moves )
 
         SelectLevel levelNumber ->
-            ( { model | currentLevel = Just levelNumber }, Cmd.none )
+            let
+                command =
+                    Task.perform (always (BoardMessage Board.appear)) (Task.succeed identity)
+            in
+                ( { model | currentLevel = Just levelNumber, moves = [] }, command )
 
         ViewLevelSelect ->
-            ( { model | currentLevel = Nothing }, Cmd.none )
+            let
+                command =
+                    Task.perform (always (BoardMessage Board.reset)) (Task.succeed identity)
+            in
+                ( { model | currentLevel = Nothing }, command )
 
         BoardMessage boardMsg ->
             let
@@ -154,7 +162,7 @@ levelSelectView model =
         Html.div
             [ Attributes.style styles ]
             [ Html.ul
-                [ Attributes.style [ ( "list-style", "none" ) ] ]
+                [ Attributes.style [ ( "list-style", "none" ), ( "padding", "0" ) ] ]
                 (List.range 1 levelCount |> List.map li)
             ]
 

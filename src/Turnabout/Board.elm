@@ -1,4 +1,4 @@
-module Turnabout.Board exposing (Msg, State, initialState, rotate, update, subscriptions, view)
+module Turnabout.Board exposing (Msg, State, initialState, rotate, appear, reset, update, subscriptions, view)
 
 import Animation exposing (Angle, deg)
 import Color exposing (..)
@@ -41,12 +41,15 @@ type alias Point =
 
 
 type alias State =
-    Animation.State
+    { styles : Animation.State
+    }
 
 
 type Msg
     = Animate Animation.Msg
     | Rotate Moves
+    | Appear
+    | Reset
 
 
 
@@ -55,9 +58,11 @@ type Msg
 
 initialState : State
 initialState =
-    Animation.styleWith
-        (Animation.spring springConfig)
-        [ Animation.rotate (deg 0) ]
+    { styles =
+        Animation.styleWith
+            (Animation.spring springConfig)
+            [ Animation.rotate (deg 0), Animation.scale 0 ]
+    }
 
 
 
@@ -69,6 +74,16 @@ rotate moves =
     Rotate moves
 
 
+appear : Msg
+appear =
+    Appear
+
+
+reset : Msg
+reset =
+    Reset
+
+
 
 -- UPDATE
 
@@ -77,10 +92,30 @@ update : Msg -> State -> ( State, Cmd Msg )
 update msg state =
     case msg of
         Rotate moves ->
-            ( animateRotation moves state, Cmd.none )
+            ( { state | styles = animateRotation moves state.styles }, Cmd.none )
+
+        Appear ->
+            let
+                property =
+                    Animation.to [ Animation.scale 1 ]
+
+                styles =
+                    Animation.queue [ property ] state.styles
+            in
+                ( { state | styles = styles }, Cmd.none )
+
+        Reset ->
+            let
+                property =
+                    Animation.to [ Animation.scale 0, Animation.rotate (deg 0) ]
+
+                styles =
+                    Animation.queue [ property ] state.styles
+            in
+                ( { state | styles = styles }, Cmd.none )
 
         Animate amount ->
-            ( Animation.update amount state, Cmd.none )
+            ( { state | styles = Animation.update amount state.styles }, Cmd.none )
 
 
 animateRotation : Moves -> Animation.State -> Animation.State
@@ -116,15 +151,15 @@ reduceMoves moves =
 
 subscriptions : State -> Sub Msg
 subscriptions state =
-    Animation.subscription Animate [ state ]
+    Animation.subscription Animate [ state.styles ]
 
 
 
 -- VIEW
 
 
-view : Level -> Animation.State -> Svg msg
-view level animatedStyles =
+view : Level -> State -> Svg msg
+view level animationState =
     Svg.svg
         [ version "1.1"
         , x "0"
@@ -136,7 +171,7 @@ view level animatedStyles =
         , Svg.Attributes.style "background-color: #FAFEFA"
         , style "background-color: #666"
         ]
-        [ theBoardItself level animatedStyles ]
+        [ theBoardItself level animationState ]
 
 
 inlineStyles : Svg.Attribute msg
@@ -144,9 +179,11 @@ inlineStyles =
     Svg.Attributes.style "transform-origin: center"
 
 
-theBoardItself : Level -> Animation.State -> Svg msg
-theBoardItself level animatedStyles =
-    Svg.g (inlineStyles :: (Animation.render animatedStyles)) [ (lazy boardTiles level) ]
+theBoardItself : Level -> State -> Svg msg
+theBoardItself level animationState =
+    Svg.g
+        (inlineStyles :: Animation.render animationState.styles)
+        [ (lazy boardTiles level) ]
 
 
 boardTiles : Level -> Svg msg
