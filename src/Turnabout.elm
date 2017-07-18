@@ -177,7 +177,7 @@ levelView level board =
         bottomRight =
             absolutelyPositioned [ ( "bottom", offset ), ( "right", offset ) ]
     in
-        Html.div [ Attributes.style [ ( "position", "relative" ) ] ]
+        Html.div [ Attributes.style [ ( "position", "relative" ), ( "height", "100%" ) ] ]
             [ Board.view level board
             , button ViewLevelSelect |> topLeft
             , button Undo |> topRight
@@ -211,7 +211,7 @@ button msg =
                     Octicons.listUnordered
 
                 _ ->
-                    Octicons.issueReopened
+                    Debug.crash "You shouldn't be able to get here"
 
         iconOptions =
             Octicons.defaultOptions |> Octicons.size 30 |> Octicons.color "#555"

@@ -132,7 +132,7 @@ view level animatedStyles =
         , width "100%"
         , height "100%"
         , viewBox "-150 -50 500 300"
-        , preserveAspectRatio "xMaxYMin meet"
+        , preserveAspectRatio "xMidYMid meet"
         , Svg.Attributes.style "background-color: #FAFEFA"
         , style "background-color: #666"
         ]
