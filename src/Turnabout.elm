@@ -75,14 +75,14 @@ update msg model =
         SelectLevel levelNumber ->
             let
                 command =
-                    Task.perform (always (BoardMessage Board.appear)) (Task.succeed identity)
+                    send (BoardMessage Board.appear)
             in
                 ( { model | currentLevel = Just levelNumber, moves = [] }, command )
 
         ViewLevelSelect ->
             let
                 command =
-                    Task.perform (always (BoardMessage Board.reset)) (Task.succeed identity)
+                    send (BoardMessage Board.reset)
             in
                 ( { model | currentLevel = Nothing }, command )
 
@@ -95,6 +95,11 @@ update msg model =
 
         NoOp ->
             ( model, Cmd.none )
+
+
+send : Msg -> Cmd Msg
+send msg =
+    Task.perform (always msg) (Task.succeed identity)
 
 
 rotateCommand : Moves -> Cmd Msg
