@@ -62,15 +62,21 @@ update msg model =
             let
                 moves =
                     rotation :: model.moves
+
+                command =
+                    send (BoardMessage (Board.rotate moves))
             in
-                ( { model | moves = moves }, rotateCommand moves )
+                ( { model | moves = moves }, command )
 
         Undo ->
             let
                 moves =
                     List.tail model.moves |> Maybe.withDefault []
+
+                command =
+                    send (BoardMessage (Board.rotate moves))
             in
-                ( { model | moves = moves }, rotateCommand moves )
+                ( { model | moves = moves }, command )
 
         SelectLevel levelNumber ->
             let
@@ -100,11 +106,6 @@ update msg model =
 send : Msg -> Cmd Msg
 send msg =
     Task.perform (always msg) (Task.succeed identity)
-
-
-rotateCommand : Moves -> Cmd Msg
-rotateCommand moves =
-    Task.perform (BoardMessage << Board.rotate) (Task.succeed moves)
 
 
 subscriptions : Model -> Sub Msg
@@ -228,13 +229,13 @@ button msg =
                     Debug.crash "You shouldn't be able to get here"
 
         iconOptions =
-            Octicons.defaultOptions |> Octicons.size 30 |> Octicons.color "#555"
+            Octicons.defaultOptions |> Octicons.size 24 |> Octicons.color "#555"
 
         styles =
             [ ( "background-color", "rgba(255, 255, 255, 0.5)" )
             , ( "border", "none" )
             , ( "border-radius", "3px" )
-            , ( "padding", "15px" )
+            , ( "padding", "10px 11px" )
             , ( "cursor", "pointer" )
             ]
 

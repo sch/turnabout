@@ -231,7 +231,7 @@ svgMarble ( x, y ) =
             [ fill (colorToHex blue)
             , cx (toString ((x * size) + (size // 2)))
             , cy (toString ((y * size) + (size // 2)))
-            , r (toString ((size) // 2))
+            , r (toString (size // 2))
             ]
             []
         ]
