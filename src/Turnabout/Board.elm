@@ -160,18 +160,29 @@ subscriptions state =
 
 view : Level -> State -> Svg msg
 view level animationState =
-    Svg.svg
-        [ version "1.1"
-        , x "0"
-        , y "0"
-        , width "100%"
-        , height "100%"
-        , viewBox "-150 -50 500 300"
-        , preserveAspectRatio "xMidYMid meet"
-        , Svg.Attributes.style "background-color: #FAFEFA"
-        , style "background-color: #666"
-        ]
-        [ theBoardItself level animationState ]
+    let
+        viewBoxWidth =
+            size * (Levels.size level |> .width) + (size * 4)
+
+        viewBoxheight =
+            size * (Levels.size level |> .height) + (size * 4)
+
+        viewBoxValue =
+            [ 0, 0, viewBoxWidth, viewBoxheight ] |> List.map toString |> String.join " "
+
+        translationValue =
+            "translate(" ++ (size * 2 |> toString) ++ ", " ++ (size * 2 |> toString) ++ ")"
+    in
+        Svg.svg
+            [ version "1.1"
+            , width "100%"
+            , height "100%"
+            , viewBox viewBoxValue
+            , preserveAspectRatio "xMidYMid meet"
+            , Svg.Attributes.style "background-color: #FAFEFA"
+            , style "background-color: #666"
+            ]
+            [ Svg.g [ transform translationValue ] [ theBoardItself level animationState ] ]
 
 
 inlineStyles : Svg.Attribute msg
