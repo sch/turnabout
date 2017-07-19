@@ -7,7 +7,7 @@ import Keyboard
 import Octicons
 import Task
 import Turnabout.Board as Board
-import Turnabout.Levels as Levels
+import Turnabout.Level as Level exposing (Level)
 import Turnabout.Types exposing (Rotation(Clockwise, CounterClockwise), Moves)
 
 
@@ -136,7 +136,7 @@ view : Model -> Html Msg
 view model =
     case model.currentLevel of
         Just levelNumber ->
-            levelView (Levels.get levelNumber) model.board
+            levelView (Level.get levelNumber) model.board
 
         Nothing ->
             levelSelectView model
@@ -157,7 +157,7 @@ levelSelectView model =
             ]
 
         levelCount =
-            List.length Levels.all
+            List.length Level.all
 
         li num =
             Html.li
@@ -174,7 +174,7 @@ levelSelectView model =
             ]
 
 
-levelView : Levels.Level -> Board.State -> Html Msg
+levelView : Level -> Board.State -> Html Msg
 levelView level board =
     let
         offset =

@@ -1,4 +1,4 @@
-module Turnabout.Levels exposing (Tile(..), Level, get, size, all)
+module Turnabout.Level exposing (Tile(..), Level, get, size, all)
 
 import Dict exposing (Dict)
 
@@ -24,6 +24,21 @@ type alias Level =
 
 type alias Size =
     { width : Int, height : Int }
+
+
+type alias Coordinate =
+    ( Int, Int )
+
+
+type Movable
+    = Coordinate Tile
+
+
+type alias LayeredLevel =
+    { board : Dict Coordinate Tile
+    , movables : List Movable
+    , size : Size
+    }
 
 
 size : Level -> Size
@@ -191,20 +206,11 @@ get number =
         |> Maybe.withDefault (parseLevelString one)
 
 
-type alias Coordinate =
-    ( Int, Int )
-
-
-type alias LayeredLevel =
-    { board : Dict Coordinate Tile
-    , movables : List (Dict Coordinate Tile)
-    }
-
-
 empty : LayeredLevel
 empty =
     { board = Dict.empty
     , movables = []
+    , size = { width = 0, height = 0 }
     }
 
 

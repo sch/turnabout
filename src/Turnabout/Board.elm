@@ -6,7 +6,7 @@ import Color.Convert exposing (colorToHex)
 import Svg exposing (Svg)
 import Svg.Attributes exposing (..)
 import Svg.Lazy exposing (lazy)
-import Turnabout.Levels as Levels exposing (Level)
+import Turnabout.Level as Level exposing (Level)
 import Turnabout.Types exposing (Rotation(Clockwise, CounterClockwise), Moves)
 
 
@@ -162,10 +162,10 @@ view : Level -> State -> Svg msg
 view level animationState =
     let
         viewBoxWidth =
-            size * (Levels.size level |> .width) + (size * 4)
+            size * (Level.size level |> .width) + (size * 4)
 
         viewBoxheight =
-            size * (Levels.size level |> .height) + (size * 4)
+            size * (Level.size level |> .height) + (size * 4)
 
         viewBoxValue =
             [ 0, 0, viewBoxWidth, viewBoxheight ] |> List.map toString |> String.join " "
@@ -237,23 +237,23 @@ svgMarble ( x, y ) =
         ]
 
 
-convertTileToSvg : Levels.Tile -> Point -> Svg msg
+convertTileToSvg : Level.Tile -> Point -> Svg msg
 convertTileToSvg tile coordinates =
     case tile of
-        Levels.Wall ->
+        Level.Wall ->
             svgSquare coordinates reddish
 
-        Levels.Block ->
+        Level.Block ->
             svgSquare coordinates Color.lightBrown
 
-        Levels.Marble color ->
+        Level.Marble color ->
             svgMarble coordinates
 
-        Levels.Goal color ->
+        Level.Goal color ->
             svgSquare coordinates blue
 
-        Levels.Floor ->
+        Level.Floor ->
             svgSquare coordinates Color.lightGray
 
-        Levels.Empty ->
+        Level.Empty ->
             svgSquare coordinates Color.white
