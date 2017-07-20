@@ -1,4 +1,13 @@
-module Turnabout.Level exposing (Tile(..), Color(..), Level, get, size, all)
+module Turnabout.Level
+    exposing
+        ( Tile(..)
+        , Color(..)
+        , Level
+        , get
+        , size
+        , all
+        , toCoordinateDict
+        )
 
 import Dict exposing (Dict)
 
@@ -43,11 +52,42 @@ type alias LayeredLevel =
     }
 
 
+{-| Takes a two-dimensional list and creates a dictionary where the keys are
+coordinate pairs for the location of the values in the 2d list.
+dict =
+Dict.fromList
+[ ((0, 0), "a")
+, ((0, 1), "b")
+, ((1, 0), "c")
+, ((1, 1), "d")
+]
+toCoordinateDict [["a", "b"], ["c", "d"]] == dict
+-}
+toCoordinateDict : List (List a) -> Dict ( Int, Int ) a
+toCoordinateDict twoDee =
+    let
+        pairs =
+            List.indexedMap addRowToPair twoDee |> List.concatMap identity
+
+        addRowToPair rowIndex columns =
+            List.indexedMap (\columnIndex item -> ( ( rowIndex, columnIndex ), item )) columns
+    in
+        Dict.fromList pairs
+
+
 size : Level -> Size
 size level =
-    { width = level |> List.map List.length |> List.maximum |> Maybe.withDefault 0
-    , height = List.length level
-    }
+    let
+        width =
+            level
+                |> List.map List.length
+                |> List.maximum
+                |> Maybe.withDefault 0
+
+        height =
+            List.length level
+    in
+        Size width height
 
 
 one =
@@ -344,6 +384,7 @@ twenty =
   #####
 """
 
+
 twentyone =
     """
 ##########
@@ -357,6 +398,7 @@ twentyone =
 #y#B.p.###
 ##########
 """
+
 
 twentytwo =
     """
@@ -375,6 +417,7 @@ twentytwo =
   ####
 """
 
+
 twentythree =
     """
 ##########
@@ -388,6 +431,7 @@ twentythree =
 #.##.....#
 ##########
 """
+
 
 twentyfour =
     """
@@ -403,6 +447,7 @@ twentyfour =
 ###gb...###
 ###########
 """
+
 
 twentyfive =
     """
@@ -422,6 +467,7 @@ twentyfive =
  ####
 """
 
+
 twentysix =
     """
   ###
@@ -435,6 +481,7 @@ twentysix =
     #R#
     ###
 """
+
 
 twentyseven =
     """
@@ -451,6 +498,7 @@ twentyseven =
 #..R##
 #####
 """
+
 
 twentyeight =
     """
@@ -470,6 +518,7 @@ twentyeight =
 #     ##     #
 """
 
+
 twentynine =
     """
 #########
@@ -486,6 +535,7 @@ twentynine =
 #.......#
 #########
 """
+
 
 thirty =
     """
@@ -504,6 +554,7 @@ thirty =
    ##...##
     #####
 """
+
 
 all =
     List.map parseLevelString

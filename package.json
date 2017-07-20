@@ -5,7 +5,8 @@
     "install-elm-packages": "elm-package install",
     "start": "elm-reactor --address=0.0.0.0 --port=9000",
     "build": "elm-make src/Main.elm --output build/main.js",
-    "minify": "google-closure-compiler-js build/main.js > build/main.min.js"
+    "minify": "google-closure-compiler-js build/main.js > build/main.min.js",
+    "test": "elm-test"
   },
   "repository": {
     "type": "git",
@@ -18,6 +19,7 @@
   "homepage": "https://adrian.schaedle.me/turnabout",
   "devDependencies": {
     "elm": "^0.18.0",
+    "elm-test": "^0.18.7",
     "google-closure-compiler-js": "^20170626.0.0"
   }
 }

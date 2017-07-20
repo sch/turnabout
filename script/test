@@ -1,0 +1,9 @@
+#!/bin/sh
+
+# script/test: Run tests for this project
+
+set -e
+
+cd "$(dirname "$0")/.."
+
+npm test
