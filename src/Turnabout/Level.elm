@@ -1,4 +1,4 @@
-module Turnabout.Level exposing (Tile(..), Level, get, size, all)
+module Turnabout.Level exposing (Tile(..), Color(..), Level, get, size, all)
 
 import Dict exposing (Dict)
 
@@ -43,7 +43,7 @@ type alias LayeredLevel =
 
 size : Level -> Size
 size level =
-    { width = List.length (List.head level |> Maybe.withDefault [])
+    { width = level |> List.map List.length |> List.maximum |> Maybe.withDefault 0
     , height = List.length level
     }
 
@@ -194,8 +194,178 @@ ten =
 """
 
 
+eleven =
+    """
+#########
+#.......#
+#b...#.r#
+####.####
+   #.#
+####.####
+#R.....B#
+#########
+"""
+
+
+twelve =
+    """
+      #
+      ##
+      #B#
+      #..#
+   ####..#
+  #......#
+ #r....#.#####
+#####.#....b#
+    #......#
+    #..####
+    #..#
+     #R#
+      ##
+       #
+"""
+
+
+thirteen =
+    """
+####    ####
+#..######..#
+#b........r#
+##........##
+ #..#..#..#
+##..B..R..##
+###......###
+##........##
+ ##......##
+  ########
+"""
+
+
+fourteen =
+    """
+#######
+#.....##
+##..#..##
+#..b##.R#
+#..##..##
+#....b##
+#..####
+#..#
+#.r#
+####
+"""
+
+
+fifteen =
+    """
+########
+#.....R#
+#r..11##
+##.##1##
+#....1##
+# #111##
+#b....B#
+########
+"""
+
+
+sixteen =
+    """
+ ########
+ #......#
+##.####.#
+#.....#.#
+#.###.#.#
+#.###.#.#
+#R#br.#B#
+#########
+"""
+
+
+seventeen =
+    """
+ ########
+ #......#
+##.####.#
+#.....#.#
+#.###.#.#
+#.###.#.#
+#R#rb.#B#
+#########
+"""
+
+
+eighteen =
+    """
+  ######
+  #....#
+  #.rb.#
+  #.##.#
+  #..#.#
+  #..#.#
+####.#.#
+#...B###
+#r#..R#
+#######
+"""
+
+
+nineteen =
+    """
+###       ###
+#.#       #.#
+#1.#     #.2#
+#b.#     #.r#
+ #..#   #..#
+  #..###..#
+  #.......#
+ #.........#
+#..R.....B..#
+#...........#
+#....#.#....#
+ #....#....#
+  #..#.#..#
+   #######
+"""
+
+
+twenty =
+    """
+  #######
+###.....#
+#.......#
+#.......#
+#...B...#
+#.b...r.#
+###R..###
+  #...#
+  #####
+"""
+
+
 all =
-    List.map parseLevelString [ one, two, three, four, five, six, seven, eight, nine, ten ]
+    List.map parseLevelString
+        [ one
+        , two
+        , three
+        , four
+        , five
+        , six
+        , seven
+        , eight
+        , nine
+        , ten
+        , eleven
+        , twelve
+        , thirteen
+        , fourteen
+        , fifteen
+        , sixteen
+        , seventeen
+        , eighteen
+        , nineteen
+        , twenty
+        ]
 
 
 get : Int -> Level
@@ -218,7 +388,7 @@ parse : String -> LayeredLevel
 parse levelString =
     let
         rows =
-            levelString |> String.trim |> String.lines |> List.indexedMap parseHelp
+            levelString |> String.lines |> List.indexedMap parseHelp
     in
         empty
 
@@ -236,7 +406,7 @@ parseHelp rowIndex rowString =
 
 parseLevelString : String -> Level
 parseLevelString string =
-    string |> String.trim |> String.lines |> List.map parseLevelRow
+    string |> String.lines |> List.map parseLevelRow
 
 
 parseLevelRow row =
@@ -252,8 +422,20 @@ parseLevelChar char =
         'r' ->
             Marble Red
 
+        'g' ->
+            Marble Green
+
+        'b' ->
+            Marble Blue
+
         'R' ->
             Goal Red
+
+        'G' ->
+            Goal Green
+
+        'B' ->
+            Goal Blue
 
         '1' ->
             Block
@@ -268,6 +450,18 @@ parseLevelChar char =
             Block
 
         '5' ->
+            Block
+
+        '6' ->
+            Block
+
+        '7' ->
+            Block
+
+        '8' ->
+            Block
+
+        '9' ->
             Block
 
         '.' ->

@@ -180,7 +180,7 @@ view level animationState =
             , viewBox viewBoxValue
             , preserveAspectRatio "xMidYMid meet"
             , Svg.Attributes.style "background-color: #FAFEFA"
-            , style "background-color: #666"
+            , style "background-color: #AAA"
             ]
             [ Svg.g [ transform translationValue ] [ theBoardItself level animationState ] ]
 
@@ -223,12 +223,12 @@ svgSquare ( gridX, gridY ) color =
         []
 
 
-svgMarble : Point -> Svg msg
-svgMarble ( x, y ) =
+svgMarble : Point -> Color -> Svg msg
+svgMarble ( x, y ) color =
     Svg.g []
         [ svgSquare ( x, y ) Color.lightGray
         , Svg.circle
-            [ fill (colorToHex blue)
+            [ fill (colorToHex color)
             , cx (toString ((x * size) + (size // 2)))
             , cy (toString ((y * size) + (size // 2)))
             , r (toString (size // 2))
@@ -237,23 +237,36 @@ svgMarble ( x, y ) =
         ]
 
 
+reifyColor : Level.Color -> Color
+reifyColor color =
+    case color of
+        Level.Red ->
+            rgb 208 73 66
+
+        Level.Green ->
+            rgb 0 200 0
+
+        Level.Blue ->
+            rgb 32 22 129
+
+
 convertTileToSvg : Level.Tile -> Point -> Svg msg
 convertTileToSvg tile coordinates =
     case tile of
         Level.Wall ->
-            svgSquare coordinates reddish
+            svgSquare coordinates Color.charcoal
 
         Level.Block ->
             svgSquare coordinates Color.lightBrown
 
         Level.Marble color ->
-            svgMarble coordinates
+            svgMarble coordinates (reifyColor color)
 
         Level.Goal color ->
-            svgSquare coordinates blue
+            svgSquare coordinates (reifyColor color)
 
         Level.Floor ->
             svgSquare coordinates Color.lightGray
 
         Level.Empty ->
-            svgSquare coordinates Color.white
+            Svg.text ""
