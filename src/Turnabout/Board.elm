@@ -180,7 +180,7 @@ view level animationState =
             , viewBox viewBoxValue
             , preserveAspectRatio "xMidYMid meet"
             , Svg.Attributes.style "background-color: #FAFEFA"
-            , style "background-color: #AAA"
+            , style "background-color:#AAA ; position:fixed ; top:0 ; left:0"
             ]
             [ Svg.g [ transform translationValue ] [ theBoardItself level animationState ] ]
 
