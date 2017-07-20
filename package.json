@@ -2,7 +2,7 @@
   "name": "turnabout",
   "version": "1.0.0",
   "scripts": {
-    "install-elm-packages": "elm-package install",
+    "install-elm-packages": "elm-package install --yes",
     "start": "elm-reactor --address=0.0.0.0 --port=9000",
     "build": "elm-make src/Main.elm --output build/main.js",
     "minify": "google-closure-compiler-js build/main.js > build/main.min.js",
