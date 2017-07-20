@@ -154,6 +154,7 @@ levelSelectView model =
             , ( "text-align", "center" )
             , ( "text-decoration", "none" )
             , ( "padding", "30px" )
+            , ( "overflow", "auto" )
             ]
 
         levelCount =
