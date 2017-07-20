@@ -249,6 +249,12 @@ reifyColor color =
         Level.Blue ->
             rgb 32 22 129
 
+        Level.Yellow ->
+            rgb 255 255 50
+
+        Level.Purple ->
+            rgb 100 0 100
+
 
 convertTileToSvg : Level.Tile -> Point -> Svg msg
 convertTileToSvg tile coordinates =
