@@ -3,7 +3,6 @@ module Turnabout.Level
         ( Tile(..)
         , Color(..)
         , Level
-        , LayeredLevel
         , Size
         , get
         , size
@@ -12,8 +11,19 @@ module Turnabout.Level
         , parse
         )
 
-import Parser exposing (Parser, (|=), succeed)
+import Turnabout.Level.Parser as Parser
 import Dict exposing (Dict)
+
+
+-- re-exports
+
+
+parse =
+    Parser.parse
+
+
+
+--- types
 
 
 type Color
@@ -47,13 +57,6 @@ type alias Coordinate =
 
 type Movable
     = Coordinate Tile
-
-
-type alias LayeredLevel =
-    { board : Dict Coordinate Tile
-    , movables : List Movable
-    , size : Size
-    }
 
 
 {-| Takes a two-dimensional list and creates a dictionary where the keys are
@@ -601,66 +604,6 @@ get number =
         |> List.drop (number - 1)
         |> List.head
         |> Maybe.withDefault (parseLevelString one)
-
-
-empty : LayeredLevel
-empty =
-    { board = Dict.empty
-    , movables = []
-    , size = { width = 0, height = 0 }
-    }
-
-
-
--- levelParser : Parser LayeredLevel
--- levelParser =
---     succeed LayeredLevel
---         |= " "
-
-
-parse : String -> LayeredLevel
-parse levelString =
-    let
-        ( level, _, _ ) =
-            parseHelp ( empty, (String.toList levelString), ( 0, 0 ) )
-    in
-        level
-
-
-parseHelp : ( LayeredLevel, List Char, Coordinate ) -> ( LayeredLevel, List Char, Coordinate )
-parseHelp construct =
-    case construct of
-        ( level, [], index ) ->
-            ( level, [], index )
-
-        -- eat up beginning newlines
-        ( level, '\n' :: rest, ( 0, 0 ) ) ->
-            parseHelp ( level, rest, ( 0, 0 ) )
-
-        ( level, '\n' :: rest, ( _, row ) ) ->
-            parseHelp ( level, rest, ( 0, row + 1 ) )
-
-        ( level, tileCharacter :: rest, ( column, row ) ) ->
-            let
-                tile =
-                    parseLevelChar tileCharacter
-
-                width =
-                    max (row + 1) level.size.width
-
-                height =
-                    max (column + 1) level.size.width
-
-                size =
-                    Size width height
-
-                board =
-                    Dict.insert ( column, row ) tile level.board
-
-                newLevel =
-                    LayeredLevel board level.movables size
-            in
-                parseHelp ( newLevel, rest, ( column + 1, row ) )
 
 
 parseLevelString : String -> Level
