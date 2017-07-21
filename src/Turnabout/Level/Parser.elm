@@ -83,19 +83,15 @@ empty =
 
 parse : String -> Level
 parse levelString =
-    let
-        ( level, _, _ ) =
-            parseHelp ( empty, (String.toList levelString), ( 0, 0 ) )
-    in
-        level
+    parseHelp ( empty, (String.toList levelString), ( 0, 0 ) )
 
 
-parseHelp : ( Level, List Char, Coordinate ) -> ( Level, List Char, Coordinate )
+parseHelp : ( Level, List Char, Coordinate ) -> Level
 parseHelp construct =
     case construct of
         -- we've seen all characters! no more work to do
-        ( level, [], index ) ->
-            ( level, [], index )
+        ( level, [], _ ) ->
+            level
 
         -- eat up beginning newlines
         ( level, '\n' :: rest, ( 0, 0 ) ) ->
