@@ -105,46 +105,56 @@ parseHelp construct =
         ( level, '\n' :: rest, ( _, row ) ) ->
             parseHelp ( level, rest, ( 0, row + 1 ) )
 
-        ( level, 'r' :: rest, index ) ->
-            parseHelp ( (level |> addMarble Red index), rest, (nextIndex index 'r') )
-
-        ( level, 'g' :: rest, index ) ->
-            parseHelp ( (level |> addMarble Green index), rest, (nextIndex index 'g') )
-
-        ( level, 'b' :: rest, index ) ->
-            parseHelp ( (level |> addMarble Blue index), rest, (nextIndex index 'b') )
-
-        ( level, 'R' :: rest, index ) ->
-            parseHelp ( (level |> addGoal Red index), rest, (nextIndex index 'R') )
-
-        ( level, 'G' :: rest, index ) ->
-            parseHelp ( (level |> addGoal Green index), rest, (nextIndex index 'G') )
-
-        ( level, 'B' :: rest, index ) ->
-            parseHelp ( (level |> addGoal Blue index), rest, (nextIndex index 'B') )
-
-        ( level, '#' :: rest, index ) ->
+        ( level, char :: rest, index ) ->
             let
                 newLevel =
-                    Level
-                        (markWall index level.board)
-                        level.movables
-                        (newSize level.size index)
-            in
-                parseHelp ( newLevel, rest, (nextIndex index '#') )
+                    case char of
+                        'r' ->
+                            level |> addMarble Red index
 
-        ( level, '.' :: rest, index ) ->
-            let
-                newLevel =
-                    Level
-                        (markFloor index level.board)
-                        level.movables
-                        (newSize level.size index)
-            in
-                parseHelp ( newLevel, rest, (nextIndex index '.') )
+                        'g' ->
+                            level |> addMarble Green index
 
-        ( level, _ :: rest, index ) ->
-            parseHelp ( level, rest, (nextIndex index '#') )
+                        'b' ->
+                            level |> addMarble Blue index
+
+                        'y' ->
+                            level |> addMarble Yellow index
+
+                        'p' ->
+                            level |> addMarble Purple index
+
+                        'R' ->
+                            level |> addGoal Red index
+
+                        'G' ->
+                            level |> addGoal Green index
+
+                        'B' ->
+                            level |> addGoal Blue index
+
+                        'Y' ->
+                            level |> addGoal Yellow index
+
+                        'P' ->
+                            level |> addGoal Purple index
+
+                        '#' ->
+                            Level
+                                (markWall index level.board)
+                                level.movables
+                                (newSize level.size index)
+
+                        '.' ->
+                            Level
+                                (markFloor index level.board)
+                                level.movables
+                                (newSize level.size index)
+
+                        _ ->
+                            level
+            in
+                parseHelp ( newLevel, rest, (nextIndex index char) )
 
 
 markFloor : Coordinate -> Board -> Board
@@ -174,6 +184,7 @@ coordinate of the currently parsed token.
 newSize : Size -> Coordinate -> Size
 newSize { width, height } ( columnIndex, rowIndex ) =
     Size (max (columnIndex + 1) width) (max (rowIndex + 1) height)
+
 
 addMarble : Color -> Coordinate -> Level -> Level
 addMarble color index level =
