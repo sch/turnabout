@@ -2,7 +2,8 @@ module LevelTest exposing (suite)
 
 import Test exposing (..)
 import Expect
-import Turnabout.Level as Level
+import Turnabout.Types exposing (..)
+import Turnabout.Level as Level exposing (Cardinality(..))
 import Dict
 
 
@@ -49,10 +50,11 @@ suite =
     describe "Level data and generation"
         [ test
             "it can convert a 2D array to a dict of coordinates"
-            (run
-                (Expect.equal
-                    (Level.toCoordinateDict twoDimensionalList)
-                    fixture
-                )
-            )
+            (run (Expect.equal (Level.toCoordinateDict twoDimensionalList) fixture))
+        , test
+            "Can determine cardinality by rotating clockwise"
+            (run (Expect.equal (Level.determineCardinality [ Clockwise, Clockwise, Clockwise ]) East))
+        , test
+            "Can determine cardinality by rotating counter-clockwise"
+            (run (Expect.equal (Level.determineCardinality [ CounterClockwise ]) East))
         ]

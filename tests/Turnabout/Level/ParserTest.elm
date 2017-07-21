@@ -2,7 +2,8 @@ module Turnabout.Level.ParserTest exposing (suite)
 
 import Test exposing (..)
 import Expect
-import Turnabout.Level.Parser as Parser exposing (Level, Size)
+import Turnabout.Level.Parser as Parser
+import Turnabout.Level.Types exposing (..)
 import Dict
 
 
@@ -45,7 +46,7 @@ suite =
             (run
                 (Expect.equal
                     (Parser.parse "#")
-                    (Level (Dict.singleton ( 0, 0 ) Parser.Wall) [] (Size 1 1))
+                    (Level (Dict.singleton ( 0, 0 ) Wall) [] (Size 1 1))
                 )
             )
         , test "can parse a two-dimensional board"
@@ -53,10 +54,10 @@ suite =
                 (let
                     board =
                         Dict.fromList
-                            [ ( ( 0, 0 ), Parser.Wall )
-                            , ( ( 0, 1 ), Parser.Wall )
-                            , ( ( 1, 0 ), Parser.Wall )
-                            , ( ( 1, 1 ), Parser.Wall )
+                            [ ( ( 0, 0 ), Wall )
+                            , ( ( 0, 1 ), Wall )
+                            , ( ( 1, 0 ), Wall )
+                            , ( ( 1, 1 ), Wall )
                             ]
                  in
                     (Expect.equal
@@ -70,22 +71,22 @@ suite =
                 (let
                     board =
                         Dict.fromList
-                            [ ( ( 0, 0 ), Parser.Wall )
-                            , ( ( 1, 0 ), Parser.Wall )
-                            , ( ( 2, 0 ), Parser.Wall )
-                            , ( ( 3, 0 ), Parser.Wall )
-                            , ( ( 0, 1 ), Parser.Wall )
-                            , ( ( 1, 1 ), Parser.Floor )
-                            , ( ( 2, 1 ), Parser.Floor )
-                            , ( ( 3, 1 ), Parser.Wall )
-                            , ( ( 0, 2 ), Parser.Wall )
-                            , ( ( 1, 2 ), Parser.Wall )
-                            , ( ( 2, 2 ), Parser.Wall )
-                            , ( ( 3, 2 ), Parser.Wall )
+                            [ ( ( 0, 0 ), Wall )
+                            , ( ( 1, 0 ), Wall )
+                            , ( ( 2, 0 ), Wall )
+                            , ( ( 3, 0 ), Wall )
+                            , ( ( 0, 1 ), Wall )
+                            , ( ( 1, 1 ), Floor )
+                            , ( ( 2, 1 ), Floor )
+                            , ( ( 3, 1 ), Wall )
+                            , ( ( 0, 2 ), Wall )
+                            , ( ( 1, 2 ), Wall )
+                            , ( ( 2, 2 ), Wall )
+                            , ( ( 3, 2 ), Wall )
                             ]
 
                     movables =
-                        [ Parser.Marble Parser.Red ( 2, 1 ) ]
+                        [ Marble Red ( 2, 1 ) ]
                  in
                     (Expect.equal
                         (Parser.parse oneMarble)
@@ -98,92 +99,92 @@ suite =
                 (let
                     board =
                         Dict.fromList
-                            [ ( ( 0, 0 ), Parser.Wall )
-                            , ( ( 1, 0 ), Parser.Wall )
-                            , ( ( 2, 0 ), Parser.Wall )
-                            , ( ( 3, 0 ), Parser.Wall )
-                            , ( ( 4, 0 ), Parser.Wall )
-                            , ( ( 5, 0 ), Parser.Wall )
-                            , ( ( 6, 0 ), Parser.Wall )
-                            , ( ( 7, 0 ), Parser.Wall )
+                            [ ( ( 0, 0 ), Wall )
+                            , ( ( 1, 0 ), Wall )
+                            , ( ( 2, 0 ), Wall )
+                            , ( ( 3, 0 ), Wall )
+                            , ( ( 4, 0 ), Wall )
+                            , ( ( 5, 0 ), Wall )
+                            , ( ( 6, 0 ), Wall )
+                            , ( ( 7, 0 ), Wall )
 
                             -- row 2
-                            , ( ( 0, 1 ), Parser.Wall )
-                            , ( ( 1, 1 ), Parser.Floor )
-                            , ( ( 2, 1 ), Parser.Floor )
-                            , ( ( 3, 1 ), Parser.Floor )
-                            , ( ( 4, 1 ), Parser.Floor )
-                            , ( ( 5, 1 ), Parser.Floor )
-                            , ( ( 6, 1 ), Parser.Floor )
-                            , ( ( 7, 1 ), Parser.Wall )
+                            , ( ( 0, 1 ), Wall )
+                            , ( ( 1, 1 ), Floor )
+                            , ( ( 2, 1 ), Floor )
+                            , ( ( 3, 1 ), Floor )
+                            , ( ( 4, 1 ), Floor )
+                            , ( ( 5, 1 ), Floor )
+                            , ( ( 6, 1 ), Floor )
+                            , ( ( 7, 1 ), Wall )
 
                             -- row 3
-                            , ( ( 0, 2 ), Parser.Wall )
-                            , ( ( 1, 2 ), Parser.Floor )
-                            , ( ( 2, 2 ), Parser.Floor )
-                            , ( ( 3, 2 ), Parser.Floor )
-                            , ( ( 4, 2 ), Parser.Floor )
-                            , ( ( 5, 2 ), Parser.Floor )
-                            , ( ( 6, 2 ), Parser.Wall )
-                            , ( ( 7, 2 ), Parser.Wall )
+                            , ( ( 0, 2 ), Wall )
+                            , ( ( 1, 2 ), Floor )
+                            , ( ( 2, 2 ), Floor )
+                            , ( ( 3, 2 ), Floor )
+                            , ( ( 4, 2 ), Floor )
+                            , ( ( 5, 2 ), Floor )
+                            , ( ( 6, 2 ), Wall )
+                            , ( ( 7, 2 ), Wall )
 
                             -- row 4
-                            , ( ( 0, 3 ), Parser.Wall )
-                            , ( ( 1, 3 ), Parser.Wall )
-                            , ( ( 2, 3 ), Parser.Floor )
-                            , ( ( 3, 3 ), Parser.Wall )
-                            , ( ( 4, 3 ), Parser.Wall )
-                            , ( ( 5, 3 ), Parser.Floor )
-                            , ( ( 6, 3 ), Parser.Wall )
-                            , ( ( 7, 3 ), Parser.Wall )
+                            , ( ( 0, 3 ), Wall )
+                            , ( ( 1, 3 ), Wall )
+                            , ( ( 2, 3 ), Floor )
+                            , ( ( 3, 3 ), Wall )
+                            , ( ( 4, 3 ), Wall )
+                            , ( ( 5, 3 ), Floor )
+                            , ( ( 6, 3 ), Wall )
+                            , ( ( 7, 3 ), Wall )
 
                             -- row 5
-                            , ( ( 0, 4 ), Parser.Wall )
-                            , ( ( 1, 4 ), Parser.Floor )
-                            , ( ( 2, 4 ), Parser.Floor )
-                            , ( ( 3, 4 ), Parser.Floor )
-                            , ( ( 4, 4 ), Parser.Floor )
-                            , ( ( 5, 4 ), Parser.Floor )
-                            , ( ( 6, 4 ), Parser.Wall )
-                            , ( ( 7, 4 ), Parser.Wall )
+                            , ( ( 0, 4 ), Wall )
+                            , ( ( 1, 4 ), Floor )
+                            , ( ( 2, 4 ), Floor )
+                            , ( ( 3, 4 ), Floor )
+                            , ( ( 4, 4 ), Floor )
+                            , ( ( 5, 4 ), Floor )
+                            , ( ( 6, 4 ), Wall )
+                            , ( ( 7, 4 ), Wall )
 
                             -- row 6
-                            , ( ( 0, 5 ), Parser.Wall )
-                            , ( ( 1, 5 ), Parser.Floor )
-                            , ( ( 2, 5 ), Parser.Wall )
-                            , ( ( 3, 5 ), Parser.Floor )
-                            , ( ( 4, 5 ), Parser.Floor )
-                            , ( ( 5, 5 ), Parser.Floor )
-                            , ( ( 6, 5 ), Parser.Wall )
-                            , ( ( 7, 5 ), Parser.Wall )
+                            , ( ( 0, 5 ), Wall )
+                            , ( ( 1, 5 ), Floor )
+                            , ( ( 2, 5 ), Wall )
+                            , ( ( 3, 5 ), Floor )
+                            , ( ( 4, 5 ), Floor )
+                            , ( ( 5, 5 ), Floor )
+                            , ( ( 6, 5 ), Wall )
+                            , ( ( 7, 5 ), Wall )
 
                             -- row 7
-                            , ( ( 0, 6 ), Parser.Wall )
-                            , ( ( 1, 6 ), Parser.Floor )
-                            , ( ( 2, 6 ), Parser.Floor )
-                            , ( ( 3, 6 ), Parser.Floor )
-                            , ( ( 4, 6 ), Parser.Floor )
-                            , ( ( 5, 6 ), Parser.Floor )
-                            , ( ( 6, 6 ), Parser.Floor )
-                            , ( ( 7, 6 ), Parser.Wall )
+                            , ( ( 0, 6 ), Wall )
+                            , ( ( 1, 6 ), Floor )
+                            , ( ( 2, 6 ), Floor )
+                            , ( ( 3, 6 ), Floor )
+                            , ( ( 4, 6 ), Floor )
+                            , ( ( 5, 6 ), Floor )
+                            , ( ( 6, 6 ), Floor )
+                            , ( ( 7, 6 ), Wall )
 
                             -- row 8
-                            , ( ( 0, 7 ), Parser.Wall )
-                            , ( ( 1, 7 ), Parser.Wall )
-                            , ( ( 2, 7 ), Parser.Wall )
-                            , ( ( 3, 7 ), Parser.Wall )
-                            , ( ( 4, 7 ), Parser.Wall )
-                            , ( ( 5, 7 ), Parser.Wall )
-                            , ( ( 6, 7 ), Parser.Wall )
-                            , ( ( 7, 7 ), Parser.Wall )
+                            , ( ( 0, 7 ), Wall )
+                            , ( ( 1, 7 ), Wall )
+                            , ( ( 2, 7 ), Wall )
+                            , ( ( 3, 7 ), Wall )
+                            , ( ( 4, 7 ), Wall )
+                            , ( ( 5, 7 ), Wall )
+                            , ( ( 6, 7 ), Wall )
+                            , ( ( 7, 7 ), Wall )
                             ]
 
                     movables =
-                        [ Parser.Marble Parser.Red ( 1, 2 )
-                        , Parser.Marble Parser.Blue ( 1, 6 )
-                        , Parser.Goal Parser.Red ( 1, 6 )
-                        , Parser.Goal Parser.Blue ( 6, 6 )
-                        , Parser.Block (Parser.BlockId 1)
+                        [ Marble Red ( 1, 2 )
+                        , Marble Blue ( 1, 6 )
+                        , Goal Red ( 1, 6 )
+                        , Goal Blue ( 6, 6 )
+                        , Block (BlockId 1)
                             [ ( 4, 2 )
                             , ( 5, 2 )
                             , ( 5, 3 )

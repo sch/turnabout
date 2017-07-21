@@ -1,9 +1,17 @@
-module Turnabout.Level exposing (get, all, toCoordinateDict)
+module Turnabout.Level exposing (Cardinality(..), get, all, toCoordinateDict, determineCardinality)
 
+import Turnabout.Types exposing (Rotation(Clockwise, CounterClockwise), Moves)
 import Turnabout.Level.Parser as Parser
 import Turnabout.Level.String as LevelStrings
 import Turnabout.Level.Types exposing (..)
 import Dict exposing (Dict)
+
+
+type Cardinality
+    = North
+    | South
+    | East
+    | West
 
 
 {-| Takes a two-dimensional list and creates a dictionary where the keys are
@@ -37,3 +45,51 @@ all =
 get : Int -> Maybe Level
 get number =
     all |> List.drop (number - 1) |> List.head
+
+
+applyMoves : Moves -> Level -> Level
+applyMoves moves level =
+    level
+
+
+determineCardinality : Moves -> Cardinality
+determineCardinality moves =
+    moves |> List.map toInt |> List.sum |> toCardinality
+
+
+toInt : Rotation -> Int
+toInt rotation =
+    case rotation of
+        Clockwise ->
+            1
+
+        CounterClockwise ->
+            -1
+
+
+toCardinality : Int -> Cardinality
+toCardinality modulo =
+    case modulo of
+        (-3) ->
+            West
+
+        (-2) ->
+            North
+
+        (-1) ->
+            East
+
+        0 ->
+            South
+
+        1 ->
+            West
+
+        2 ->
+            North
+
+        3 ->
+            East
+
+        _ ->
+            Debug.crash "There are only four directions."
