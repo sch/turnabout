@@ -2,7 +2,7 @@ module LevelTest exposing (suite)
 
 import Test exposing (..)
 import Expect
-import Turnabout.Level as Level exposing (LayeredLevel, Size)
+import Turnabout.Level as Level
 import Dict
 
 
