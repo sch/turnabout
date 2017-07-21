@@ -73,6 +73,33 @@ parseHelp construct =
                         'P' ->
                             level |> addGoal Purple index
 
+                        '1' ->
+                            level |> addBlock 1 index
+
+                        '2' ->
+                            level |> addBlock 2 index
+
+                        '3' ->
+                            level |> addBlock 3 index
+
+                        '4' ->
+                            level |> addBlock 4 index
+
+                        '5' ->
+                            level |> addBlock 5 index
+
+                        '6' ->
+                            level |> addBlock 6 index
+
+                        '7' ->
+                            level |> addBlock 7 index
+
+                        '8' ->
+                            level |> addBlock 8 index
+
+                        '9' ->
+                            level |> addBlock 9 index
+
                         '#' ->
                             Level
                                 (markWall index level.board)
@@ -122,4 +149,12 @@ addGoal color index level =
     Level
         (markFloor index level.board)
         (Goal color index :: level.movables)
+        (newSize level.size index)
+
+
+addBlock : Int -> Coordinate -> Level -> Level
+addBlock _ index level =
+    Level
+        (markFloor index level.board)
+        level.movables
         (newSize level.size index)

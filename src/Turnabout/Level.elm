@@ -1,4 +1,12 @@
-module Turnabout.Level exposing (Cardinality(..), get, all, toCoordinateDict, determineCardinality)
+module Turnabout.Level
+    exposing
+        ( Cardinality(..)
+        , get
+        , all
+        , toCoordinateDict
+        , determineCardinality
+        , applyMoves
+        )
 
 import Turnabout.Types exposing (Rotation(Clockwise, CounterClockwise), Moves)
 import Turnabout.Level.Parser as Parser
@@ -49,7 +57,30 @@ get number =
 
 applyMoves : Moves -> Level -> Level
 applyMoves moves level =
-    level
+    case moves of
+        [] ->
+            level
+
+        move :: rest ->
+            level
+
+
+shiftSouth : Level -> Level
+shiftSouth level =
+    if settled level then
+        level
+    else
+        shiftSouth { level | movables = shiftMovables level.movables }
+
+
+settled : Level -> Bool
+settled level =
+    True
+
+
+shiftMovables : List Movable -> List Movable
+shiftMovables movables =
+    movables
 
 
 determineCardinality : Moves -> Cardinality

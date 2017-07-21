@@ -4,6 +4,9 @@ import Test exposing (..)
 import Expect
 import Turnabout.Types exposing (..)
 import Turnabout.Level as Level exposing (Cardinality(..))
+import Turnabout.Level.String as LevelStrings
+import Turnabout.Level.Parser as Parser
+import Turnabout.Level.Types exposing (..)
 import Dict
 
 
@@ -18,6 +21,11 @@ fixture =
 
 twoDimensionalList =
     [ [ "a", "b" ], [ "c", "d" ] ]
+
+
+levelOne : Level
+levelOne =
+    Parser.parse LevelStrings.one
 
 
 
@@ -57,4 +65,20 @@ suite =
         , test
             "Can determine cardinality by rotating counter-clockwise"
             (run (Expect.equal (Level.determineCardinality [ CounterClockwise ]) East))
+        , test
+            "Can apply game moves"
+            (let
+                moves =
+                    [ Clockwise, Clockwise ]
+
+                newLevel =
+                    Level.applyMoves moves levelOne
+             in
+                (run
+                    (Expect.equal
+                        newLevel.movables
+                        [ Goal Red ( 4, 4 ), Marble Red ( 1, 1 ) ]
+                    )
+                )
+            )
         ]
