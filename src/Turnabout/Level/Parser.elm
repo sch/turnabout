@@ -101,8 +101,15 @@ parseHelp construct =
         ( level, '\n' :: rest, ( _, row ) ) ->
             parseHelp ( level, rest, ( 0, row + 1 ) )
 
+        -- parse a tile into a new level state
         ( level, char :: rest, index ) ->
             let
+                ( column, row ) =
+                    index
+
+                nextIndex =
+                    ( column + 1, row )
+
                 newLevel =
                     case char of
                         'r' ->
@@ -150,7 +157,7 @@ parseHelp construct =
                         _ ->
                             level
             in
-                parseHelp ( newLevel, rest, (nextIndex index char) )
+                parseHelp ( newLevel, rest, nextIndex )
 
 
 markFloor : Coordinate -> Board -> Board
@@ -161,17 +168,6 @@ markFloor index board =
 markWall : Coordinate -> Board -> Board
 markWall index board =
     Dict.insert index Wall board
-
-
-{-| increment the index to point to the coordinate of the next parseable
-character.
--}
-nextIndex : Coordinate -> Char -> Coordinate
-nextIndex ( column, row ) token =
-    if token == '\n' then
-        ( 0, row + 1 )
-    else
-        ( column + 1, row )
 
 
 {-| figure out the new size of the board based on the current size and the
