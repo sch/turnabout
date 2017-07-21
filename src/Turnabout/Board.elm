@@ -30,7 +30,7 @@ padding =
 
 
 springConfig =
-    { stiffness = 200, damping = 21 }
+    { stiffness = 200, damping = 20 }
 
 
 
@@ -216,7 +216,7 @@ tileColor tile =
             Color.darkCharcoal
 
         Level.Floor ->
-            Color.lightGray
+            Color.darkGray
 
 
 movablesView : List Level.Movable -> Svg msg
@@ -239,21 +239,6 @@ movableView movable =
 
         Level.Block _ _ ->
             Svg.text ""
-
-
-
--- boardTiles : Level.Level -> Svg msg
--- boardTiles level =
---     let
---         tiles =
---             level
---                 |> List.indexedMap
---                     (\y row ->
---                         List.indexedMap (\x tile -> convertTileToSvg tile ( x, y )) row
---                     )
---                 |> List.concatMap identity
---     in
---         Svg.g [] tiles
 
 
 svgSquare : Color -> Point -> Svg msg
@@ -284,16 +269,13 @@ svgRoundedSquare color ( gridX, gridY ) =
 
 svgMarble : Color -> Point -> Svg msg
 svgMarble color ( x, y ) =
-    Svg.g []
-        [ svgSquare Color.white ( x, y )
-        , Svg.circle
-            [ fill (colorToHex color)
-            , cx (toString ((x * size) + (size // 2)))
-            , cy (toString ((y * size) + (size // 2)))
-            , r (toString (size // 2))
-            ]
-            []
+    Svg.circle
+        [ fill (colorToHex color)
+        , cx (toString ((x * size) + (size // 2)))
+        , cy (toString ((y * size) + (size // 2)))
+        , r (toString ((size - 1) // 2))
         ]
+        []
 
 
 toColor : Level.Color -> Color
@@ -313,21 +295,3 @@ toColor color =
 
         Level.Purple ->
             rgb 249 180 250
-
-
-
--- convertTileToSvg : Level.Tile -> Point -> Svg msg
--- convertTileToSvg tile coordinates =
---     case tile of
---         Level.Wall ->
---             svgSquare coordinates Color.darkCharcoal
---         Level.Block ->
---             svgRoundedSquare coordinates Color.darkBrown
---         Level.Marble color ->
---             svgMarble coordinates (reifyColor color)
---         Level.Goal color ->
---             svgSquare coordinates (reifyColor color)
---         Level.Floor ->
---             svgSquare coordinates Color.white
---         Level.Empty ->
---             Svg.text ""
