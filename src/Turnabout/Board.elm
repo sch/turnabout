@@ -3,19 +3,30 @@ module Turnabout.Board exposing (Msg, State, initialState, rotate, appear, reset
 import Animation exposing (Angle, deg)
 import Color exposing (..)
 import Color.Convert exposing (colorToHex)
+import Dict
 import Svg exposing (Svg)
 import Svg.Attributes exposing (..)
 import Svg.Lazy exposing (lazy)
-import Turnabout.Level as Level exposing (Level)
+import Turnabout.Level as Level
+import Turnabout.Level.Types as Level
 import Turnabout.Types exposing (Rotation(Clockwise, CounterClockwise), Moves)
 
 
 -- CONFIGURATION
 
 
+{-| The size (in magic svg units) of each block
+-}
 size : Int
 size =
     20
+
+
+{-| How many blocks should be used as padding around the edges of the playfield
+-}
+padding : Int
+padding =
+    2
 
 
 springConfig =
@@ -148,20 +159,20 @@ subscriptions state =
 -- VIEW
 
 
-view : Level -> State -> Svg msg
+view : Level.Level -> State -> Svg msg
 view level animationState =
     let
         viewBoxWidth =
-            size * (Level.size level |> .width) + (size * 4)
+            (level.size.width + (padding * 2)) * size
 
         viewBoxheight =
-            size * (Level.size level |> .height) + (size * 4)
+            (level.size.height + (padding * 2)) * size
 
         viewBoxValue =
             [ 0, 0, viewBoxWidth, viewBoxheight ] |> List.map toString |> String.join " "
 
         translationValue =
-            "translate(" ++ (size * 2 |> toString) ++ ", " ++ (size * 2 |> toString) ++ ")"
+            "translate(" ++ (size * padding |> toString) ++ ", " ++ (size * padding |> toString) ++ ")"
     in
         Svg.svg
             [ version "1.1"
@@ -179,29 +190,74 @@ inlineStyles =
     Svg.Attributes.style "transform-origin: center"
 
 
-theBoardItself : Level -> State -> Svg msg
+theBoardItself : Level.Level -> State -> Svg msg
 theBoardItself level animationState =
     Svg.g
         (inlineStyles :: Animation.render animationState.styles)
-        [ (lazy boardTiles level) ]
+        [ (lazy boardView level.board), movablesView level.movables ]
 
 
-boardTiles : Level -> Svg msg
-boardTiles level =
+boardView : Level.Board -> Svg msg
+boardView board =
     let
+        accumulateSvgTiles coordinate tile list =
+            (svgSquare (tileColor tile) coordinate) :: list
+
         tiles =
-            level
-                |> List.indexedMap
-                    (\y row ->
-                        List.indexedMap (\x tile -> convertTileToSvg tile ( x, y )) row
-                    )
-                |> List.concatMap identity
+            Dict.foldl accumulateSvgTiles [] board
     in
         Svg.g [] tiles
 
 
-svgSquare : Point -> Color -> Svg msg
-svgSquare ( gridX, gridY ) color =
+tileColor : Level.Tile -> Color
+tileColor tile =
+    case tile of
+        Level.Wall ->
+            Color.darkCharcoal
+
+        Level.Floor ->
+            Color.lightGray
+
+
+movablesView : List Level.Movable -> Svg msg
+movablesView movables =
+    let
+        items =
+            List.map movableView movables
+    in
+        Svg.g [] items
+
+
+movableView : Level.Movable -> Svg a
+movableView movable =
+    case movable of
+        Level.Marble color coordinates ->
+            svgMarble (toColor color) coordinates
+
+        Level.Goal color coordinates ->
+            svgSquare (toColor color) coordinates
+
+        Level.Block _ _ ->
+            Svg.text ""
+
+
+
+-- boardTiles : Level.Level -> Svg msg
+-- boardTiles level =
+--     let
+--         tiles =
+--             level
+--                 |> List.indexedMap
+--                     (\y row ->
+--                         List.indexedMap (\x tile -> convertTileToSvg tile ( x, y )) row
+--                     )
+--                 |> List.concatMap identity
+--     in
+--         Svg.g [] tiles
+
+
+svgSquare : Color -> Point -> Svg msg
+svgSquare color ( gridX, gridY ) =
     Svg.rect
         [ fill (colorToHex color)
         , x (toString (gridX * size + 1))
@@ -212,8 +268,8 @@ svgSquare ( gridX, gridY ) color =
         []
 
 
-svgRoundedSquare : Point -> Color -> Svg msg
-svgRoundedSquare ( gridX, gridY ) color =
+svgRoundedSquare : Color -> Point -> Svg msg
+svgRoundedSquare color ( gridX, gridY ) =
     Svg.rect
         [ fill (colorToHex color)
         , x (toString (gridX * size + 1))
@@ -226,10 +282,10 @@ svgRoundedSquare ( gridX, gridY ) color =
         []
 
 
-svgMarble : Point -> Color -> Svg msg
-svgMarble ( x, y ) color =
+svgMarble : Color -> Point -> Svg msg
+svgMarble color ( x, y ) =
     Svg.g []
-        [ svgSquare ( x, y ) Color.white
+        [ svgSquare Color.white ( x, y )
         , Svg.circle
             [ fill (colorToHex color)
             , cx (toString ((x * size) + (size // 2)))
@@ -240,8 +296,8 @@ svgMarble ( x, y ) color =
         ]
 
 
-reifyColor : Level.Color -> Color
-reifyColor color =
+toColor : Level.Color -> Color
+toColor color =
     case color of
         Level.Red ->
             rgb 208 73 66
@@ -259,23 +315,19 @@ reifyColor color =
             rgb 249 180 250
 
 
-convertTileToSvg : Level.Tile -> Point -> Svg msg
-convertTileToSvg tile coordinates =
-    case tile of
-        Level.Wall ->
-            svgSquare coordinates Color.darkCharcoal
 
-        Level.Block ->
-            svgRoundedSquare coordinates Color.darkBrown
-
-        Level.Marble color ->
-            svgMarble coordinates (reifyColor color)
-
-        Level.Goal color ->
-            svgSquare coordinates (reifyColor color)
-
-        Level.Floor ->
-            svgSquare coordinates Color.white
-
-        Level.Empty ->
-            Svg.text ""
+-- convertTileToSvg : Level.Tile -> Point -> Svg msg
+-- convertTileToSvg tile coordinates =
+--     case tile of
+--         Level.Wall ->
+--             svgSquare coordinates Color.darkCharcoal
+--         Level.Block ->
+--             svgRoundedSquare coordinates Color.darkBrown
+--         Level.Marble color ->
+--             svgMarble coordinates (reifyColor color)
+--         Level.Goal color ->
+--             svgSquare coordinates (reifyColor color)
+--         Level.Floor ->
+--             svgSquare coordinates Color.white
+--         Level.Empty ->
+--             Svg.text ""

@@ -1,4 +1,4 @@
-module Turnabout.Level.String exposing (all)
+module Turnabout.Level.String exposing (..)
 
 
 all =

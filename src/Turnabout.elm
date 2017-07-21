@@ -7,7 +7,8 @@ import Keyboard
 import Octicons
 import Task
 import Turnabout.Board as Board
-import Turnabout.Level as Level exposing (Level)
+import Turnabout.Level as Level
+import Turnabout.Level.Types exposing (Level)
 import Turnabout.Types exposing (Rotation(Clockwise, CounterClockwise), Moves)
 
 
@@ -136,10 +137,20 @@ view : Model -> Html Msg
 view model =
     case model.currentLevel of
         Just levelNumber ->
-            levelView (Level.get levelNumber) model.board
+            case (Level.get levelNumber) of
+                Just level ->
+                    levelView level model.board
+
+                Nothing ->
+                    levelUnavailableView levelNumber
 
         Nothing ->
             levelSelectView model
+
+
+levelUnavailableView : Int -> Html Msg
+levelUnavailableView number =
+    Html.text ("There isn't a level " ++ (toString number))
 
 
 levelSelectView : Model -> Html Msg

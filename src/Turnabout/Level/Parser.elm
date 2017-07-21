@@ -1,69 +1,7 @@
-module Turnabout.Level.Parser
-    exposing
-        ( Tile(..)
-        , Color(..)
-        , Movable(..)
-        , BlockId(..)
-        , Level
-        , Size
-        , parse
-        )
-
--- import Parser exposing (Parser, (|=), succeed)
+module Turnabout.Level.Parser exposing (parse, empty)
 
 import Dict exposing (Dict)
-
-
-type Color
-    = Red
-    | Green
-    | Blue
-    | Yellow
-    | Purple
-
-
-{-| Tiles are immutable board pieces --- either a wall or a floor piece. A tile
-can have a Movable on top of it if it's a Floor, but a movable can't pass
-through a Wall.
--}
-type Tile
-    = Wall
-    | Floor
-
-
-type BlockId
-    = BlockId Int
-
-
-type Movable
-    = Marble Color Coordinate
-    | Block BlockId (List Coordinate)
-    | Goal Color Coordinate
-
-
-type Parseable
-    = Tile
-    | Movable
-    | Empty
-
-
-type alias Size =
-    { width : Int, height : Int }
-
-
-type alias Coordinate =
-    ( Int, Int )
-
-
-type alias Board =
-    Dict Coordinate Tile
-
-
-type alias Level =
-    { board : Board
-    , movables : List Movable
-    , size : Size
-    }
+import Turnabout.Level.Types exposing (..)
 
 
 empty : Level
@@ -72,13 +10,6 @@ empty =
     , movables = []
     , size = Size 0 0
     }
-
-
-
--- levelParser : Parser LayeredLevel
--- levelParser =
---     succeed LayeredLevel
---         |= " "
 
 
 parse : String -> Level
