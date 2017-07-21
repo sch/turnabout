@@ -13,16 +13,6 @@ import Turnabout.Types exposing (Rotation(Clockwise, CounterClockwise), Moves)
 -- CONFIGURATION
 
 
-reddish : Color
-reddish =
-    rgb 208 73 66
-
-
-blue : Color
-blue =
-    rgb 32 22 129
-
-
 size : Int
 size =
     20
@@ -179,8 +169,7 @@ view level animationState =
             , height "100%"
             , viewBox viewBoxValue
             , preserveAspectRatio "xMidYMid meet"
-            , Svg.Attributes.style "background-color: #FAFEFA"
-            , style "background-color:#AAA ; position:fixed ; top:0 ; left:0"
+            , style "background-color:#F6F2F1 ; position:fixed ; top:0 ; left:0"
             ]
             [ Svg.g [ transform translationValue ] [ theBoardItself level animationState ] ]
 
@@ -223,10 +212,24 @@ svgSquare ( gridX, gridY ) color =
         []
 
 
+svgRoundedSquare : Point -> Color -> Svg msg
+svgRoundedSquare ( gridX, gridY ) color =
+    Svg.rect
+        [ fill (colorToHex color)
+        , x (toString (gridX * size + 1))
+        , y (toString (gridY * size + 1))
+        , width (toString (size - 2))
+        , height (toString (size - 2))
+        , rx "2"
+        , ry "2"
+        ]
+        []
+
+
 svgMarble : Point -> Color -> Svg msg
 svgMarble ( x, y ) color =
     Svg.g []
-        [ svgSquare ( x, y ) Color.lightGray
+        [ svgSquare ( x, y ) Color.white
         , Svg.circle
             [ fill (colorToHex color)
             , cx (toString ((x * size) + (size // 2)))
@@ -244,26 +247,26 @@ reifyColor color =
             rgb 208 73 66
 
         Level.Green ->
-            rgb 0 200 0
+            rgb 164 255 237
 
         Level.Blue ->
-            rgb 32 22 129
+            rgb 55 144 242
 
         Level.Yellow ->
-            rgb 255 255 50
+            rgb 247 179 74
 
         Level.Purple ->
-            rgb 100 0 100
+            rgb 249 180 250
 
 
 convertTileToSvg : Level.Tile -> Point -> Svg msg
 convertTileToSvg tile coordinates =
     case tile of
         Level.Wall ->
-            svgSquare coordinates Color.charcoal
+            svgSquare coordinates Color.darkCharcoal
 
         Level.Block ->
-            svgSquare coordinates Color.lightBrown
+            svgRoundedSquare coordinates Color.darkBrown
 
         Level.Marble color ->
             svgMarble coordinates (reifyColor color)
@@ -272,7 +275,7 @@ convertTileToSvg tile coordinates =
             svgSquare coordinates (reifyColor color)
 
         Level.Floor ->
-            svgSquare coordinates Color.lightGray
+            svgSquare coordinates Color.white
 
         Level.Empty ->
             Svg.text ""
