@@ -2,12 +2,15 @@ module Turnabout.Level.Parser
     exposing
         ( Tile(..)
         , Color(..)
+        , Movable(..)
+        , BlockId(..)
         , Level
         , Size
         , parse
         )
 
-import Parser exposing (Parser, (|=), succeed)
+-- import Parser exposing (Parser, (|=), succeed)
+
 import Dict exposing (Dict)
 
 
@@ -90,6 +93,7 @@ parse levelString =
 parseHelp : ( Level, List Char, Coordinate ) -> ( Level, List Char, Coordinate )
 parseHelp construct =
     case construct of
+        -- we've seen all characters! no more work to do
         ( level, [], index ) ->
             ( level, [], index )
 
@@ -97,34 +101,27 @@ parseHelp construct =
         ( level, '\n' :: rest, ( 0, 0 ) ) ->
             parseHelp ( level, rest, ( 0, 0 ) )
 
+        -- we've reached the end of a line, advance the index
         ( level, '\n' :: rest, ( _, row ) ) ->
             parseHelp ( level, rest, ( 0, row + 1 ) )
 
         ( level, 'r' :: rest, index ) ->
-            let
-                movables =
-                    Marble Red index :: level.movables
+            parseHelp ( (level |> addMarble Red index), rest, (nextIndex index 'r') )
 
-                newLevel =
-                    Level
-                        (markFloor index level.board)
-                        movables
-                        (newSize level.size index)
-            in
-                parseHelp ( newLevel, rest, (nextIndex index 'r') )
+        ( level, 'g' :: rest, index ) ->
+            parseHelp ( (level |> addMarble Green index), rest, (nextIndex index 'g') )
+
+        ( level, 'b' :: rest, index ) ->
+            parseHelp ( (level |> addMarble Blue index), rest, (nextIndex index 'b') )
 
         ( level, 'R' :: rest, index ) ->
-            let
-                movables =
-                    Goal Red index :: level.movables
+            parseHelp ( (level |> addGoal Red index), rest, (nextIndex index 'R') )
 
-                newLevel =
-                    Level
-                        (markFloor index level.board)
-                        movables
-                        (newSize level.size index)
-            in
-                parseHelp ( newLevel, rest, (nextIndex index 'r') )
+        ( level, 'G' :: rest, index ) ->
+            parseHelp ( (level |> addGoal Green index), rest, (nextIndex index 'G') )
+
+        ( level, 'B' :: rest, index ) ->
+            parseHelp ( (level |> addGoal Blue index), rest, (nextIndex index 'B') )
 
         ( level, '#' :: rest, index ) ->
             let
@@ -177,3 +174,18 @@ coordinate of the currently parsed token.
 newSize : Size -> Coordinate -> Size
 newSize { width, height } ( columnIndex, rowIndex ) =
     Size (max (columnIndex + 1) width) (max (rowIndex + 1) height)
+
+addMarble : Color -> Coordinate -> Level -> Level
+addMarble color index level =
+    Level
+        (markFloor index level.board)
+        (Marble color index :: level.movables)
+        (newSize level.size index)
+
+
+addGoal : Color -> Coordinate -> Level -> Level
+addGoal color index level =
+    Level
+        (markFloor index level.board)
+        (Goal color index :: level.movables)
+        (newSize level.size index)

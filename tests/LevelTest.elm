@@ -19,6 +19,7 @@ twoDimensionalList =
     [ [ "a", "b" ], [ "c", "d" ] ]
 
 
+
 -- SIDENOTE
 --
 -- I kinda hate elm's testing DSL. I was thinking: what do I like? I like
@@ -32,12 +33,12 @@ twoDimensionalList =
 --              , input fixture
 --              , output twoDimensionalList
 --              ]
-
 --       , test [ description "it can ...
 --              , function Level.size
 --              , ...
 --              ]
 --       ]
+
 
 run =
     always
