@@ -1,4 +1,15 @@
-module Turnabout.Board exposing (Msg, State, initialState, rotate, appear, reset, update, subscriptions, view)
+module Turnabout.Playfield
+    exposing
+        ( Msg
+        , State
+        , initialState
+        , rotate
+        , appear
+        , reset
+        , update
+        , subscriptions
+        , view
+        )
 
 import Animation exposing (Angle, deg)
 import Color exposing (..)
@@ -30,7 +41,7 @@ padding =
 
 
 springConfig =
-    { stiffness = 200, damping = 20 }
+    { stiffness = 160, damping = 18 }
 
 
 
@@ -213,7 +224,7 @@ tileColor : Level.Tile -> Color
 tileColor tile =
     case tile of
         Level.Wall ->
-            Color.darkCharcoal
+            Color.charcoal
 
         Level.Floor ->
             Color.darkGray

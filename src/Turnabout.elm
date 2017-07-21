@@ -6,7 +6,7 @@ import Html.Events as Events
 import Keyboard
 import Octicons
 import Task
-import Turnabout.Board as Board
+import Turnabout.Playfield as Playfield
 import Turnabout.Level as Level
 import Turnabout.Level.Types exposing (Level)
 import Turnabout.Types exposing (Rotation(Clockwise, CounterClockwise), Moves)
@@ -27,7 +27,7 @@ type Cardinality
 type Msg
     = Rotate Rotation
     | Undo
-    | BoardMessage Board.Msg
+    | PlayfieldMessage Playfield.Msg
     | SelectLevel Int
     | ViewLevelSelect
     | NoOp
@@ -43,7 +43,7 @@ type alias Model =
     { gravity : Cardinality
     , currentLevel : Maybe Int
     , moves : Moves
-    , board : Board.State
+    , playfield : Playfield.State
     }
 
 
@@ -52,7 +52,7 @@ initialState =
     { gravity = South
     , currentLevel = Nothing
     , moves = []
-    , board = Board.initialState
+    , playfield = Playfield.initialState
     }
 
 
@@ -65,7 +65,7 @@ update msg model =
                     rotation :: model.moves
 
                 command =
-                    send (BoardMessage (Board.rotate moves))
+                    send (PlayfieldMessage (Playfield.rotate moves))
             in
                 ( { model | moves = moves }, command )
 
@@ -75,30 +75,30 @@ update msg model =
                     List.tail model.moves |> Maybe.withDefault []
 
                 command =
-                    send (BoardMessage (Board.rotate moves))
+                    send (PlayfieldMessage (Playfield.rotate moves))
             in
                 ( { model | moves = moves }, command )
 
         SelectLevel levelNumber ->
             let
                 command =
-                    send (BoardMessage Board.appear)
+                    send (PlayfieldMessage Playfield.appear)
             in
                 ( { model | currentLevel = Just levelNumber, moves = [] }, command )
 
         ViewLevelSelect ->
             let
                 command =
-                    send (BoardMessage Board.reset)
+                    send (PlayfieldMessage Playfield.reset)
             in
                 ( { model | currentLevel = Nothing }, command )
 
-        BoardMessage boardMsg ->
+        PlayfieldMessage playfieldMsg ->
             let
-                ( board, command ) =
-                    Board.update boardMsg model.board
+                ( playfield, command ) =
+                    Playfield.update playfieldMsg model.playfield
             in
-                ( { model | board = board }, Cmd.map BoardMessage command )
+                ( { model | playfield = playfield }, Cmd.map PlayfieldMessage command )
 
         NoOp ->
             ( model, Cmd.none )
@@ -113,7 +113,7 @@ subscriptions : Model -> Sub Msg
 subscriptions model =
     Sub.batch
         [ Keyboard.downs messagesFromCode
-        , Board.subscriptions model.board |> Sub.map BoardMessage
+        , Playfield.subscriptions model.playfield |> Sub.map PlayfieldMessage
         ]
 
 
@@ -139,7 +139,7 @@ view model =
         Just levelNumber ->
             case (Level.get levelNumber) of
                 Just level ->
-                    levelView level model.board
+                    levelView level model.playfield
 
                 Nothing ->
                     levelUnavailableView levelNumber
@@ -186,8 +186,8 @@ levelSelectView model =
             ]
 
 
-levelView : Level -> Board.State -> Html Msg
-levelView level board =
+levelView : Level -> Playfield.State -> Html Msg
+levelView level playfield =
     let
         offset =
             "16px"
@@ -205,7 +205,7 @@ levelView level board =
             absolutelyPositioned [ ( "bottom", offset ), ( "right", offset ) ]
     in
         Html.div [ Attributes.style [ ( "position", "relative" ), ( "height", "100%" ) ] ]
-            [ Board.view level board
+            [ Playfield.view level playfield
             , button ViewLevelSelect |> topLeft
             , button Undo |> topRight
             , button (Rotate CounterClockwise) |> bottomLeft

@@ -6,9 +6,6 @@ import Turnabout.Level.Types exposing (..)
 import Dict exposing (Dict)
 
 
--- re-exports
-
-
 {-| Takes a two-dimensional list and creates a dictionary where the keys are
 coordinate pairs for the location of the values in the 2d list.
 dict =
@@ -32,6 +29,7 @@ toCoordinateDict twoDee =
         Dict.fromList pairs
 
 
+all : List Level
 all =
     List.map Parser.parse LevelStrings.all
 
