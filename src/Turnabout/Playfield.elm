@@ -18,7 +18,6 @@ import Dict
 import Svg exposing (Svg)
 import Svg.Attributes exposing (..)
 import Svg.Lazy exposing (lazy)
-import Turnabout.Level as Level
 import Turnabout.Level.Types as Level
 import Turnabout.Types exposing (Rotation(Clockwise, CounterClockwise), Moves)
 
@@ -40,8 +39,9 @@ padding =
     2
 
 
-springConfig =
-    { stiffness = 160, damping = 18 }
+spring : Animation.Interpolation
+spring =
+    Animation.spring { stiffness = 160, damping = 18 }
 
 
 
@@ -71,9 +71,10 @@ type Msg
 initialState : State
 initialState =
     { styles =
-        Animation.styleWith
-            (Animation.spring springConfig)
-            [ Animation.rotate (deg 0), Animation.scale 0 ]
+        Animation.styleWith spring
+            [ Animation.rotate (deg 0)
+            , Animation.scale 0
+            ]
     }
 
 
