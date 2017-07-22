@@ -179,9 +179,6 @@ view level animationState =
         viewBoxheight =
             (level.size.height + (padding * 2)) * size
 
-        viewBoxValue =
-            [ 0, 0, viewBoxWidth, viewBoxheight ] |> List.map toString |> String.join " "
-
         translationValue =
             "translate(" ++ (size * padding |> toString) ++ ", " ++ (size * padding |> toString) ++ ")"
     in
@@ -189,23 +186,36 @@ view level animationState =
             [ version "1.1"
             , width "100%"
             , height "100%"
-            , viewBox viewBoxValue
+            , viewbox viewBoxWidth viewBoxheight
             , preserveAspectRatio "xMidYMid meet"
             , style "background-color:#F6F2F1 ; position:fixed ; top:0 ; left:0"
             ]
             [ Svg.g [ transform translationValue ] [ theBoardItself level animationState ] ]
 
 
-inlineStyles : Svg.Attribute msg
-inlineStyles =
-    Svg.Attributes.style "transform-origin: center"
+viewbox : Int -> Int -> Svg.Attribute msg
+viewbox width height =
+    [ 0, 0, width, height ]
+        |> List.map toString
+        |> String.join " "
+        |> Svg.Attributes.viewBox
 
 
 theBoardItself : Level.Level -> State -> Svg msg
 theBoardItself level animationState =
-    Svg.g
-        (inlineStyles :: Animation.render animationState.styles)
-        [ (lazy boardView level.board), movablesView level.movables ]
+    let
+        inlineStyles =
+            Svg.Attributes.style "transform-origin: center"
+
+        attributes =
+            inlineStyles :: Animation.render animationState.styles
+
+        children =
+            [ lazy boardView level.board
+            , movablesView level.movables
+            ]
+    in
+        Svg.g attributes children
 
 
 boardView : Level.Board -> Svg msg
