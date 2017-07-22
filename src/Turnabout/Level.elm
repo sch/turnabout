@@ -57,30 +57,109 @@ get number =
 
 applyMoves : Moves -> Level -> Level
 applyMoves moves level =
+    applyMovesHelp (Debug.log "moves to apply" moves) level South
+
+
+applyMovesHelp : Moves -> Level -> Cardinality -> Level
+applyMovesHelp moves level gravity =
     case moves of
         [] ->
             level
 
         move :: rest ->
-            level
+            let
+                g =
+                    Debug.log "next gravity" (nextGravity move gravity)
+            in
+                applyMovesHelp rest (shiftMovables g level) g
 
 
-shiftSouth : Level -> Level
-shiftSouth level =
-    if settled level then
-        level
+shiftMovables : Cardinality -> Level -> Level
+shiftMovables direction level =
+    { level | movables = List.map (moveUntilBlocked direction level) level.movables }
+
+
+moveUntilBlocked : Cardinality -> Level -> Movable -> Movable
+moveUntilBlocked direction level movable =
+    if isBlocked direction level movable then
+        movable
     else
-        shiftSouth { level | movables = shiftMovables level.movables }
+        case movable of
+            Marble color coordinate ->
+                moveUntilBlocked
+                    direction
+                    level
+                    (Marble color (moveOneUnit direction coordinate))
+
+            Goal _ coordinate ->
+                movable
+
+            Block _ coordinate ->
+                movable
 
 
-settled : Level -> Bool
-settled level =
-    True
+{-| Given a level and a movable, check to see if that movable has settled into
+a position where it can move no longer.
+-}
+isBlocked : Cardinality -> Level -> Movable -> Bool
+isBlocked direction level movable =
+    case movable of
+        Marble color coordinate ->
+            let
+                nextSpace =
+                    moveOneUnit direction coordinate
+            in
+                isWall level.board nextSpace
+                    || List.any (occupying nextSpace) level.movables
+
+        Goal color coordinate ->
+            True
+
+        Block _ _ ->
+            True
 
 
-shiftMovables : List Movable -> List Movable
-shiftMovables movables =
-    movables
+{-| Checks to see if the given coordinate in a board is a wall or a floor
+-}
+isWall : Board -> Coordinate -> Bool
+isWall board point =
+    board
+        |> Dict.get point
+        |> Maybe.map (flip (==) Wall)
+        |> Maybe.withDefault False
+
+
+{-| Determines if there's a movable occupying the given point
+-}
+occupying : Coordinate -> Movable -> Bool
+occupying candidate movable =
+    case movable of
+        Marble _ coordinate ->
+            coordinate == candidate
+
+        Goal _ coordinate ->
+            coordinate == candidate
+
+        Block _ coordinates ->
+            List.any (flip (==) candidate) coordinates
+
+
+{-| The coordinate, moved one unit in the given direction
+-}
+moveOneUnit : Cardinality -> Coordinate -> Coordinate
+moveOneUnit direction ( x, y ) =
+    case direction of
+        South ->
+            ( x, y + 1 )
+
+        West ->
+            ( x - 1, y )
+
+        North ->
+            ( x, y - 1 )
+
+        East ->
+            ( x + 1, y )
 
 
 determineCardinality : Moves -> Cardinality
@@ -96,6 +175,34 @@ toInt rotation =
 
         CounterClockwise ->
             -1
+
+
+nextGravity : Rotation -> Cardinality -> Cardinality
+nextGravity rotation gravityDirection =
+    case gravityDirection of
+        South ->
+            if rotation == Clockwise then
+                East
+            else
+                West
+
+        West ->
+            if rotation == Clockwise then
+                South
+            else
+                North
+
+        North ->
+            if rotation == Clockwise then
+                West
+            else
+                East
+
+        East ->
+            if rotation == Clockwise then
+                North
+            else
+                South
 
 
 toCardinality : Int -> Cardinality

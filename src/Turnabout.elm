@@ -138,8 +138,12 @@ view model =
     case model.currentLevel of
         Just levelNumber ->
             case (Level.get levelNumber) of
-                Just level ->
-                    levelView level model.playfield
+                Just initialLevel ->
+                    let
+                        level =
+                            Level.applyMoves model.moves initialLevel
+                    in
+                        levelView level model.playfield
 
                 Nothing ->
                     levelUnavailableView levelNumber

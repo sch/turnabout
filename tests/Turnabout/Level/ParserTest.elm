@@ -199,8 +199,9 @@ suite =
                     )
                 )
             )
-        , skip <| test "can parse a board with marbles and blocks" <|
+        , skip <|
+            test "can parse a board with marbles and blocks" <|
                 \_ ->
                     Parser.parse wholeNineYards
-                    |> Expect.equal (Level wholeNineYardsBoard wholeNineYardsMovables (Size 8 8))
+                        |> Expect.equal (Level wholeNineYardsBoard wholeNineYardsMovables (Size 8 8))
         ]
