@@ -62,7 +62,7 @@ update msg model =
         Rotate rotation ->
             let
                 moves =
-                    rotation :: model.moves
+                    model.moves ++ [rotation]
 
                 command =
                     send (PlayfieldMessage (Playfield.rotate moves))
