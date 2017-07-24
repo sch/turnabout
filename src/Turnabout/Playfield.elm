@@ -12,6 +12,7 @@ module Turnabout.Playfield
         )
 
 import Animation exposing (Angle, deg)
+import Animation.Messenger
 import Color exposing (..)
 import Color.Convert exposing (colorToHex)
 import Dict
@@ -53,13 +54,14 @@ type alias Point =
 
 
 type alias State =
-    { styles : Animation.State
+    { styles : Animation.Messenger.State Msg
     }
 
 
 type Msg
     = Animate Animation.Msg
     | Rotate Moves
+    | AnimateMovables
     | Appear
     | Reset
 
@@ -107,6 +109,13 @@ update msg state =
         Rotate moves ->
             ( { state | styles = animateRotation moves state.styles }, Cmd.none )
 
+        AnimateMovables ->
+            let
+                _ =
+                    Debug.log "Animating movables now!" msg
+            in
+                ( state, Cmd.none )
+
         Appear ->
             let
                 property =
@@ -128,19 +137,24 @@ update msg state =
                 ( { state | styles = styles }, Cmd.none )
 
         Animate amount ->
-            ( { state | styles = Animation.update amount state.styles }, Cmd.none )
+            let
+                (styles, commands) = Animation.Messenger.update amount state.styles
+            in
+                ( { state | styles = styles }, commands )
 
 
-animateRotation : Moves -> Animation.State -> Animation.State
+animateRotation : Moves -> Animation.Messenger.State Msg -> Animation.Messenger.State Msg
 animateRotation moves style =
     let
         degrees =
             moves |> Moves.toDegrees |> toFloat |> deg
 
         animationSteps =
-            Animation.to [ Animation.rotate degrees ]
+            [ Animation.to [ Animation.rotate degrees ]
+            , Animation.Messenger.send AnimateMovables
+            ]
     in
-        Animation.queue [ animationSteps ] style
+        Animation.interrupt animationSteps style
 
 
 

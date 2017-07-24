@@ -64,7 +64,7 @@ update msg model =
                 command =
                     Cmd.map PlayfieldMessage cmd
             in
-                ( { model | moves = moves, playfield = playfield }, Cmd.none )
+                ( { model | moves = moves, playfield = playfield }, command )
 
         Undo ->
             let
@@ -77,23 +77,24 @@ update msg model =
                 command =
                     Cmd.map PlayfieldMessage cmd
             in
-                ( { model | moves = moves, playfield = playfield }, Cmd.none )
+                ( { model | moves = moves, playfield = playfield }, command )
 
         SelectLevel levelNumber ->
             let
                 ( playfield, cmd ) =
                     Playfield.update Playfield.appear model.playfield
 
+                newModel =
+                    { model
+                        | currentLevel = Just levelNumber
+                        , moves = Moves.initial
+                        , playfield = playfield
+                    }
+
                 command =
                     Cmd.map PlayfieldMessage cmd
             in
-                ( { model
-                    | currentLevel = Just levelNumber
-                    , moves = Moves.initial
-                    , playfield = playfield
-                  }
-                , command
-                )
+                ( newModel, command )
 
         ViewLevelSelect ->
             let
