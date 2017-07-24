@@ -18,7 +18,7 @@ import Dict
 import Svg exposing (Svg)
 import Svg.Attributes exposing (..)
 import Svg.Lazy exposing (lazy)
-import Turnabout.Level.Types as Level
+import Turnabout.Level.Types as Level exposing (Level)
 import Turnabout.Moves as Moves exposing (Moves)
 
 
@@ -156,8 +156,8 @@ subscriptions state =
 -- VIEW
 
 
-view : Level.Level -> State -> Svg msg
-view level animationState =
+view : State -> Level -> Svg msg
+view state level =
     let
         viewBoxWidth =
             (level.size.width + (padding * 2)) * size
@@ -176,7 +176,7 @@ view level animationState =
             , preserveAspectRatio "xMidYMid meet"
             , style "background-color:#F6F2F1 ; position:fixed ; top:0 ; left:0"
             ]
-            [ Svg.g [ transform translationValue ] [ theBoardItself level animationState ] ]
+            [ Svg.g [ transform translationValue ] [ theBoardItself state level ] ]
 
 
 viewbox : Int -> Int -> Svg.Attribute msg
@@ -187,8 +187,8 @@ viewbox width height =
         |> Svg.Attributes.viewBox
 
 
-theBoardItself : Level.Level -> State -> Svg msg
-theBoardItself level animationState =
+theBoardItself : State -> Level -> Svg msg
+theBoardItself animationState level =
     let
         inlineStyles =
             Svg.Attributes.style "transform-origin: center"

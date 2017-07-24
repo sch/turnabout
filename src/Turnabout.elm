@@ -5,11 +5,10 @@ import Html.Attributes as Attributes
 import Html.Events as Events
 import Keyboard
 import Octicons
-import Task
 import Turnabout.Playfield as Playfield
 import Turnabout.Level as Level
 import Turnabout.Level.Types exposing (Level)
-import Turnabout.Moves as Moves exposing (Moves, Rotation(Clockwise, CounterClockwise))
+import Turnabout.Moves as Moves exposing (Moves, Rotation(..))
 
 
 type Cardinality
@@ -59,34 +58,40 @@ update msg model =
                 moves =
                     Moves.rotate rotation model.moves
 
-                command =
-                    send (PlayfieldMessage (Playfield.rotate moves))
+                ( playfield, command ) =
+                    Playfield.update (Playfield.rotate moves) model.playfield
             in
-                ( { model | moves = moves }, command )
+                ( { model | moves = moves, playfield = playfield }, Cmd.none )
 
         Undo ->
             let
                 moves =
                     Moves.undo model.moves
 
-                command =
-                    send (PlayfieldMessage (Playfield.rotate moves))
+                ( playfield, command ) =
+                    Playfield.update (Playfield.rotate moves) model.playfield
             in
-                ( { model | moves = moves }, command )
+                ( { model | moves = moves, playfield = playfield }, Cmd.none )
 
         SelectLevel levelNumber ->
             let
-                command =
-                    send (PlayfieldMessage Playfield.appear)
+                ( playfield, command ) =
+                    Playfield.update Playfield.appear model.playfield
             in
-                ( { model | currentLevel = Just levelNumber, moves = [] }, command )
+                ( { model
+                    | currentLevel = Just levelNumber
+                    , moves = Moves.initial
+                    , playfield = playfield
+                  }
+                , Cmd.none
+                )
 
         ViewLevelSelect ->
             let
-                command =
-                    send (PlayfieldMessage Playfield.reset)
+                ( playfield, command ) =
+                    Playfield.update Playfield.reset model.playfield
             in
-                ( { model | currentLevel = Nothing }, command )
+                ( { model | currentLevel = Nothing, playfield = playfield }, Cmd.none )
 
         PlayfieldMessage playfieldMsg ->
             let
@@ -97,11 +102,6 @@ update msg model =
 
         NoOp ->
             ( model, Cmd.none )
-
-
-send : Msg -> Cmd Msg
-send msg =
-    Task.perform (always msg) (Task.succeed identity)
 
 
 subscriptions : Model -> Sub Msg
@@ -138,7 +138,7 @@ view model =
                         level =
                             Level.applyMoves model.moves initialLevel
                     in
-                        levelView level model.playfield
+                        levelView model.playfield level
 
                 Nothing ->
                     levelUnavailableView levelNumber
@@ -185,8 +185,8 @@ levelSelectView model =
             ]
 
 
-levelView : Level -> Playfield.State -> Html Msg
-levelView level playfield =
+levelView : Playfield.State -> Level -> Html Msg
+levelView playfieldState level =
     let
         offset =
             "16px"
@@ -204,7 +204,7 @@ levelView level playfield =
             absolutelyPositioned [ ( "bottom", offset ), ( "right", offset ) ]
     in
         Html.div [ Attributes.style [ ( "position", "relative" ), ( "height", "100%" ) ] ]
-            [ Playfield.view level playfield
+            [ Playfield.view playfieldState level
             , button ViewLevelSelect |> topLeft
             , button Undo |> topRight
             , button (Rotate CounterClockwise) |> bottomLeft

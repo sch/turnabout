@@ -1,4 +1,4 @@
-module Turnabout.Level exposing ( get , all , toCoordinateDict , applyMoves)
+module Turnabout.Level exposing (get, all, toCoordinateDict, applyMoves)
 
 import Turnabout.Cardinality exposing (Cardinality(..))
 import Turnabout.Moves exposing (Rotation(Clockwise, CounterClockwise), Moves)

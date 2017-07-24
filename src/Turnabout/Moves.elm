@@ -13,6 +13,7 @@ module Turnabout.Moves
 
 import Turnabout.Cardinality exposing (Cardinality(..))
 
+
 type Rotation
     = Clockwise
     | CounterClockwise
@@ -61,6 +62,7 @@ rotationInDegrees rotation =
         CounterClockwise ->
             -90
 
+
 toCardinality : Moves -> Cardinality
 toCardinality moves =
     case toDegrees moves % 360 of
@@ -87,5 +89,3 @@ toCardinality moves =
 
         _ ->
             Debug.crash "There are only four directions."
-
-
