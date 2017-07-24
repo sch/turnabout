@@ -19,7 +19,7 @@ import Svg exposing (Svg)
 import Svg.Attributes exposing (..)
 import Svg.Lazy exposing (lazy)
 import Turnabout.Level.Types as Level
-import Turnabout.Types exposing (Rotation(Clockwise, CounterClockwise), Moves)
+import Turnabout.Moves as Moves exposing (Moves)
 
 
 -- CONFIGURATION
@@ -135,27 +135,12 @@ animateRotation : Moves -> Animation.State -> Animation.State
 animateRotation moves style =
     let
         degrees =
-            reduceMoves moves |> toFloat |> deg
+            moves |> Moves.toDegrees |> toFloat |> deg
 
         animationSteps =
             Animation.to [ Animation.rotate degrees ]
     in
         Animation.queue [ animationSteps ] style
-
-
-rotationInDegrees : Rotation -> Int
-rotationInDegrees rotation =
-    case rotation of
-        Clockwise ->
-            90
-
-        CounterClockwise ->
-            -90
-
-
-reduceMoves : Moves -> Int
-reduceMoves moves =
-    List.foldl (+) 0 (List.map rotationInDegrees moves)
 
 
 

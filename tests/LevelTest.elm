@@ -2,12 +2,11 @@ module LevelTest exposing (suite)
 
 import Test exposing (..)
 import Expect
-import Turnabout.Types exposing (..)
-import Turnabout.Level as Level exposing (Cardinality(..))
-import Turnabout.Level.String as LevelStrings
-import Turnabout.Level.Parser as Parser
-import Turnabout.Level.Types exposing (..)
 import Dict
+import Fixtures.Level
+import Turnabout.Level as Level
+import Turnabout.Level.Types exposing (..)
+import Turnabout.Moves as Moves
 
 
 fixture =
@@ -21,11 +20,6 @@ fixture =
 
 twoDimensionalList =
     [ [ "a", "b" ], [ "c", "d" ] ]
-
-
-levelOne : Level
-levelOne =
-    Parser.parse LevelStrings.one
 
 
 
@@ -49,36 +43,25 @@ levelOne =
 --       ]
 
 
-run =
-    always
+moves =
+    Moves.initial
+        |> Moves.rotateCounterClockwise
+        |> Moves.rotateCounterClockwise
+
+
+newLevel =
+    Level.applyMoves moves Fixtures.Level.levelOne
 
 
 suite : Test
 suite =
     describe "Level data and generation"
-        [ test
-            "it can convert a 2D array to a dict of coordinates"
-            (run (Expect.equal (Level.toCoordinateDict twoDimensionalList) fixture))
-        , test
-            "Can determine cardinality by rotating clockwise"
-            (run (Expect.equal (Level.determineCardinality [ Clockwise, Clockwise, Clockwise ]) East))
-        , test
-            "Can determine cardinality by rotating counter-clockwise"
-            (run (Expect.equal (Level.determineCardinality [ CounterClockwise ]) East))
-        , test
-            "Can apply game moves"
-            (let
-                moves =
-                    [ Clockwise, Clockwise ]
-
-                newLevel =
-                    Level.applyMoves moves levelOne
-             in
-                (run
-                    (Expect.equal
-                        newLevel.movables
-                        [ Goal Red ( 4, 4 ), Marble Red ( 1, 1 ) ]
-                    )
-                )
-            )
+        [ test "it can convert a 2D array to a dict of coordinates" <|
+            \_ ->
+                Level.toCoordinateDict twoDimensionalList
+                    |> Expect.equal fixture
+        , test "Can apply game moves" <|
+            \_ ->
+                newLevel.movables
+                    |> Expect.equal [ Goal Red ( 4, 4 ), Marble Red ( 1, 1 ) ]
         ]

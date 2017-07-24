@@ -9,12 +9,7 @@ import Task
 import Turnabout.Playfield as Playfield
 import Turnabout.Level as Level
 import Turnabout.Level.Types exposing (Level)
-import Turnabout.Types exposing (Rotation(Clockwise, CounterClockwise), Moves)
-
-
-type BoardMove
-    = ClockwiseFrom Cardinality
-    | CounterClockwiseFrom Cardinality
+import Turnabout.Moves as Moves exposing (Moves, Rotation(Clockwise, CounterClockwise))
 
 
 type Cardinality
@@ -51,7 +46,7 @@ initialState : Model
 initialState =
     { gravity = South
     , currentLevel = Nothing
-    , moves = []
+    , moves = Moves.initial
     , playfield = Playfield.initialState
     }
 
@@ -62,7 +57,7 @@ update msg model =
         Rotate rotation ->
             let
                 moves =
-                    model.moves ++ [rotation]
+                    Moves.rotate rotation model.moves
 
                 command =
                     send (PlayfieldMessage (Playfield.rotate moves))
@@ -72,7 +67,7 @@ update msg model =
         Undo ->
             let
                 moves =
-                    List.tail model.moves |> Maybe.withDefault []
+                    Moves.undo model.moves
 
                 command =
                     send (PlayfieldMessage (Playfield.rotate moves))

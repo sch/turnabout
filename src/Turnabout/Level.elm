@@ -1,25 +1,11 @@
-module Turnabout.Level
-    exposing
-        ( Cardinality(..)
-        , get
-        , all
-        , toCoordinateDict
-        , determineCardinality
-        , applyMoves
-        )
+module Turnabout.Level exposing ( get , all , toCoordinateDict , applyMoves)
 
-import Turnabout.Types exposing (Rotation(Clockwise, CounterClockwise), Moves)
+import Turnabout.Cardinality exposing (Cardinality(..))
+import Turnabout.Moves exposing (Rotation(Clockwise, CounterClockwise), Moves)
 import Turnabout.Level.Parser as Parser
 import Turnabout.Level.String as LevelStrings
 import Turnabout.Level.Types exposing (..)
 import Dict exposing (Dict)
-
-
-type Cardinality
-    = North
-    | South
-    | East
-    | West
 
 
 {-| Takes a two-dimensional list and creates a dictionary where the keys are
@@ -57,7 +43,7 @@ get number =
 
 applyMoves : Moves -> Level -> Level
 applyMoves moves level =
-    applyMovesHelp (Debug.log "moves to apply" moves) level South
+    applyMovesHelp moves level South
 
 
 applyMovesHelp : Moves -> Level -> Cardinality -> Level
@@ -69,7 +55,7 @@ applyMovesHelp moves level gravity =
         move :: rest ->
             let
                 g =
-                    Debug.log "next gravity" (nextGravity move gravity)
+                    nextGravity move gravity
             in
                 applyMovesHelp rest (shiftMovables g level) g
 
@@ -162,21 +148,6 @@ moveOneUnit direction ( x, y ) =
             ( x + 1, y )
 
 
-determineCardinality : Moves -> Cardinality
-determineCardinality moves =
-    moves |> List.map toInt |> List.sum |> toCardinality
-
-
-toInt : Rotation -> Int
-toInt rotation =
-    case rotation of
-        Clockwise ->
-            1
-
-        CounterClockwise ->
-            -1
-
-
 nextGravity : Rotation -> Cardinality -> Cardinality
 nextGravity rotation gravityDirection =
     case gravityDirection of
@@ -203,31 +174,3 @@ nextGravity rotation gravityDirection =
                 North
             else
                 South
-
-
-toCardinality : Int -> Cardinality
-toCardinality modulo =
-    case modulo of
-        (-3) ->
-            West
-
-        (-2) ->
-            North
-
-        (-1) ->
-            East
-
-        0 ->
-            South
-
-        1 ->
-            West
-
-        2 ->
-            North
-
-        3 ->
-            East
-
-        _ ->
-            Debug.crash "There are only four directions."
