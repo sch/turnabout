@@ -8,6 +8,7 @@ module Turnabout.Playfield
         , reset
         , update
         , subscriptions
+        , isAnimating
         , view
         )
 
@@ -54,7 +55,8 @@ type alias Point =
 
 
 type alias State =
-    { styles : Animation.Messenger.State Msg
+    { isAnimating : Bool
+    , styles : Animation.Messenger.State Msg
     }
 
 
@@ -72,12 +74,22 @@ type Msg
 
 initialState : State
 initialState =
-    { styles =
+    { isAnimating = False
+    , styles =
         Animation.styleWith spring
             [ Animation.rotate (deg 0)
             , Animation.scale 0
             ]
     }
+
+
+
+-- QUERIES
+
+
+isAnimating : State -> Bool
+isAnimating state =
+    state.isAnimating
 
 
 
@@ -107,14 +119,18 @@ update : Msg -> State -> ( State, Cmd Msg )
 update msg state =
     case msg of
         Rotate moves ->
-            ( { state | styles = animateRotation moves state.styles }, Cmd.none )
+            let
+                styles =
+                    animateRotation moves state.styles
+            in
+                ( { state | styles = styles, isAnimating = True }, Cmd.none )
 
         AnimateMovables ->
             let
                 _ =
                     Debug.log "Animating movables now!" msg
             in
-                ( state, Cmd.none )
+                ( { state | isAnimating = False }, Cmd.none )
 
         Appear ->
             let
@@ -138,7 +154,8 @@ update msg state =
 
         Animate amount ->
             let
-                (styles, commands) = Animation.Messenger.update amount state.styles
+                ( styles, commands ) =
+                    Animation.Messenger.update amount state.styles
             in
                 ( { state | styles = styles }, commands )
 

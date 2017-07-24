@@ -119,10 +119,14 @@ update msg model =
 
 subscriptions : Model -> Sub Msg
 subscriptions model =
-    Sub.batch
-        [ Keyboard.downs messagesFromCode
-        , Playfield.subscriptions model.playfield |> Sub.map PlayfieldMessage
-        ]
+    let
+        playfieldSubscriptions =
+            Playfield.subscriptions model.playfield |> Sub.map PlayfieldMessage
+    in
+        if Playfield.isAnimating model.playfield then
+            playfieldSubscriptions
+        else
+            Sub.batch [ Keyboard.downs messagesFromCode, playfieldSubscriptions ]
 
 
 messagesFromCode : Int -> Msg
