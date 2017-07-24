@@ -58,8 +58,11 @@ update msg model =
                 moves =
                     Moves.rotate rotation model.moves
 
-                ( playfield, command ) =
+                ( playfield, cmd ) =
                     Playfield.update (Playfield.rotate moves) model.playfield
+
+                command =
+                    Cmd.map PlayfieldMessage cmd
             in
                 ( { model | moves = moves, playfield = playfield }, Cmd.none )
 
@@ -68,30 +71,39 @@ update msg model =
                 moves =
                     Moves.undo model.moves
 
-                ( playfield, command ) =
+                ( playfield, cmd ) =
                     Playfield.update (Playfield.rotate moves) model.playfield
+
+                command =
+                    Cmd.map PlayfieldMessage cmd
             in
                 ( { model | moves = moves, playfield = playfield }, Cmd.none )
 
         SelectLevel levelNumber ->
             let
-                ( playfield, command ) =
+                ( playfield, cmd ) =
                     Playfield.update Playfield.appear model.playfield
+
+                command =
+                    Cmd.map PlayfieldMessage cmd
             in
                 ( { model
                     | currentLevel = Just levelNumber
                     , moves = Moves.initial
                     , playfield = playfield
                   }
-                , Cmd.none
+                , command
                 )
 
         ViewLevelSelect ->
             let
-                ( playfield, command ) =
+                ( playfield, cmd ) =
                     Playfield.update Playfield.reset model.playfield
+
+                command =
+                    Cmd.map PlayfieldMessage cmd
             in
-                ( { model | currentLevel = Nothing, playfield = playfield }, Cmd.none )
+                ( { model | currentLevel = Nothing, playfield = playfield }, command )
 
         PlayfieldMessage playfieldMsg ->
             let
