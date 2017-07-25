@@ -2,13 +2,13 @@ module Turnabout.Level.Parser exposing (parse, empty)
 
 import Dict exposing (Dict)
 import Turnabout.Level.Types exposing (..)
+import Turnabout.Board as Board exposing (Board)
 
 
 empty : Level
 empty =
-    { board = Dict.empty
+    { board = Board.empty
     , movables = []
-    , size = Size 0 0
     }
 
 
@@ -44,73 +44,67 @@ parseHelp construct =
                 newLevel =
                     case char of
                         'r' ->
-                            level |> addMarble Red index
+                            level |> withMarble Red index
 
                         'g' ->
-                            level |> addMarble Green index
+                            level |> withMarble Green index
 
                         'b' ->
-                            level |> addMarble Blue index
+                            level |> withMarble Blue index
 
                         'y' ->
-                            level |> addMarble Yellow index
+                            level |> withMarble Yellow index
 
                         'p' ->
-                            level |> addMarble Purple index
+                            level |> withMarble Purple index
 
                         'R' ->
-                            level |> addGoal Red index
+                            level |> withGoal Red index
 
                         'G' ->
-                            level |> addGoal Green index
+                            level |> withGoal Green index
 
                         'B' ->
-                            level |> addGoal Blue index
+                            level |> withGoal Blue index
 
                         'Y' ->
-                            level |> addGoal Yellow index
+                            level |> withGoal Yellow index
 
                         'P' ->
-                            level |> addGoal Purple index
+                            level |> withGoal Purple index
 
                         '1' ->
-                            level |> addBlock 1 index
+                            level |> withBlock 1 index
 
                         '2' ->
-                            level |> addBlock 2 index
+                            level |> withBlock 2 index
 
                         '3' ->
-                            level |> addBlock 3 index
+                            level |> withBlock 3 index
 
                         '4' ->
-                            level |> addBlock 4 index
+                            level |> withBlock 4 index
 
                         '5' ->
-                            level |> addBlock 5 index
+                            level |> withBlock 5 index
 
                         '6' ->
-                            level |> addBlock 6 index
+                            level |> withBlock 6 index
 
                         '7' ->
-                            level |> addBlock 7 index
+                            level |> withBlock 7 index
 
                         '8' ->
-                            level |> addBlock 8 index
+                            level |> withBlock 8 index
 
                         '9' ->
-                            level |> addBlock 9 index
+                            level |> withBlock 9 index
 
                         '#' ->
-                            Level
-                                (markWall index level.board)
-                                level.movables
-                                (newSize level.size index)
+                            level |> withWall index
 
                         '.' ->
-                            Level
-                                (markFloor index level.board)
-                                level.movables
-                                (newSize level.size index)
+                            level |> withFloor index
 
                         _ ->
                             level
@@ -118,43 +112,29 @@ parseHelp construct =
                 parseHelp ( newLevel, rest, nextIndex )
 
 
-markFloor : Coordinate -> Board -> Board
-markFloor index board =
-    Dict.insert index Floor board
+withMarble : Color -> Coordinate -> Level -> Level
+withMarble color index level =
+    { level | movables = (Marble color index :: level.movables) }
+        |> withFloor index
 
 
-markWall : Coordinate -> Board -> Board
-markWall index board =
-    Dict.insert index Wall board
+withGoal : Color -> Coordinate -> Level -> Level
+withGoal color index level =
+    { level | movables = (Goal color index :: level.movables) }
+        |> withFloor index
 
 
-{-| figure out the new size of the board based on the current size and the
-coordinate of the currently parsed token.
--}
-newSize : Size -> Coordinate -> Size
-newSize { width, height } ( columnIndex, rowIndex ) =
-    Size (max (columnIndex + 1) width) (max (rowIndex + 1) height)
+withBlock : Int -> Coordinate -> Level -> Level
+withBlock _ index level =
+    level
+        |> withFloor index
 
 
-addMarble : Color -> Coordinate -> Level -> Level
-addMarble color index level =
-    Level
-        (markFloor index level.board)
-        (Marble color index :: level.movables)
-        (newSize level.size index)
+withFloor : Coordinate -> Level -> Level
+withFloor index level =
+    { level | board = Board.insertFloor index level.board }
 
 
-addGoal : Color -> Coordinate -> Level -> Level
-addGoal color index level =
-    Level
-        (markFloor index level.board)
-        (Goal color index :: level.movables)
-        (newSize level.size index)
-
-
-addBlock : Int -> Coordinate -> Level -> Level
-addBlock _ index level =
-    Level
-        (markFloor index level.board)
-        level.movables
-        (newSize level.size index)
+withWall : Coordinate -> Level -> Level
+withWall index level =
+    { level | board = Board.insertWall index level.board }

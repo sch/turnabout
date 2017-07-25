@@ -20,6 +20,7 @@ import Dict
 import Svg exposing (Svg)
 import Svg.Attributes exposing (..)
 import Svg.Lazy exposing (lazy)
+import Turnabout.Board as Board exposing (Board)
 import Turnabout.Level.Types as Level exposing (Level)
 import Turnabout.Moves as Moves exposing (Moves)
 
@@ -190,11 +191,14 @@ subscriptions state =
 view : State -> Level -> Svg msg
 view state level =
     let
+        (Board.Board _ (Board.Size w h)) =
+            level.board
+
         viewBoxWidth =
-            (level.size.width + (padding * 2)) * size
+            (w + (padding * 2)) * size
 
         viewBoxheight =
-            (level.size.height + (padding * 2)) * size
+            (h + (padding * 2)) * size
 
         translationValue =
             "translate(" ++ (size * padding |> toString) ++ ", " ++ (size * padding |> toString) ++ ")"
@@ -235,25 +239,27 @@ theBoardItself animationState level =
         Svg.g attributes children
 
 
-boardView : Level.Board -> Svg msg
+boardView : Board -> Svg msg
 boardView board =
     let
-        accumulateSvgTiles coordinate tile list =
-            (svgSquare (tileColor tile) coordinate) :: list
-
         tiles =
-            Dict.foldl accumulateSvgTiles [] board
+            board
+                |> Board.toList
+                |> List.map
+                    (\( coordinate, tile ) ->
+                        svgSquare (tileColor tile) coordinate
+                    )
     in
         Svg.g [] tiles
 
 
-tileColor : Level.Tile -> Color
+tileColor : Board.Tile -> Color
 tileColor tile =
     case tile of
-        Level.Wall ->
+        Board.Wall ->
             Color.charcoal
 
-        Level.Floor ->
+        Board.Floor ->
             Color.darkGray
 
 

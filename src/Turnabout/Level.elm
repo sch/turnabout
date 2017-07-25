@@ -2,6 +2,7 @@ module Turnabout.Level exposing (get, all, toCoordinateDict, applyMoves)
 
 import Turnabout.Cardinality exposing (Cardinality(..))
 import Turnabout.Moves exposing (Rotation(Clockwise, CounterClockwise), Moves)
+import Turnabout.Board as Board exposing (Board)
 import Turnabout.Level.Parser as Parser
 import Turnabout.Level.String as LevelStrings
 import Turnabout.Level.Types exposing (..)
@@ -95,7 +96,7 @@ isBlocked direction level movable =
                 nextSpace =
                     moveOneUnit direction coordinate
             in
-                isWall level.board nextSpace
+                (level.board |> Board.isWall nextSpace)
                     || List.any (occupying nextSpace) level.movables
 
         Goal color coordinate ->
@@ -103,16 +104,6 @@ isBlocked direction level movable =
 
         Block _ _ ->
             True
-
-
-{-| Checks to see if the given coordinate in a board is a wall or a floor
--}
-isWall : Board -> Coordinate -> Bool
-isWall board point =
-    board
-        |> Dict.get point
-        |> Maybe.map (flip (==) Wall)
-        |> Maybe.withDefault False
 
 
 {-| Determines if there's a movable occupying the given point

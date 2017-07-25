@@ -1,6 +1,7 @@
 module Turnabout.Level.Types exposing (..)
 
 import Dict exposing (Dict)
+import Turnabout.Board as Board exposing (Board)
 
 
 type Color
@@ -9,15 +10,6 @@ type Color
     | Blue
     | Yellow
     | Purple
-
-
-{-| Tiles are immutable board pieces --- either a wall or a floor piece. A tile
-can have a Movable on top of it if it's a Floor, but a movable can't pass
-through a Wall.
--}
-type Tile
-    = Wall
-    | Floor
 
 
 type BlockId
@@ -44,12 +36,7 @@ type alias Coordinate =
     ( Int, Int )
 
 
-type alias Board =
-    Dict Coordinate Tile
-
-
 type alias Level =
     { board : Board
     , movables : List Movable
-    , size : Size
     }
