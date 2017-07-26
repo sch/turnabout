@@ -9,6 +9,8 @@ empty : Level
 empty =
     { board = Board.empty
     , movables = []
+    , blocks = Dict.empty
+    , positions = Dict.empty
     }
 
 

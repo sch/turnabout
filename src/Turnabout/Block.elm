@@ -1,6 +1,6 @@
 module Turnabout.Block
     exposing
-        ( Block
+        ( Block(..)
         , singleton
         , withPart
         , width

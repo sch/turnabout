@@ -1,12 +1,23 @@
-module Turnabout.Level exposing (get, all, applyMoves)
+module Turnabout.Level
+    exposing
+        ( get
+        , all
+        , applyMoves
+        , getBlock
+        , insertBlock
+        , positionOf
+        , blockAt
+        )
 
+import Dict exposing (Dict)
+import Set exposing (Set)
 import Turnabout.Direction exposing (Direction(..))
 import Turnabout.Moves exposing (Rotation(Clockwise, CounterClockwise), Moves)
+import Turnabout.Block as Block exposing (Block)
 import Turnabout.Board as Board exposing (Board)
 import Turnabout.Level.Parser as Parser
 import Turnabout.Level.String as LevelStrings
 import Turnabout.Level.Types exposing (..)
-import Dict exposing (Dict)
 
 
 all : List Level
@@ -17,6 +28,36 @@ all =
 get : Int -> Maybe Level
 get number =
     all |> List.drop (number - 1) |> List.head
+
+
+getBlock : MovableId -> Level -> Maybe Block
+getBlock (MovableId id) level =
+    Dict.get id level.blocks
+
+
+insertBlock : MovableId -> Coordinate -> Level -> Level
+insertBlock (MovableId id) position level =
+    let
+        newBlock =
+            case Dict.get id level.blocks of
+                Just block ->
+                    Block.withPart position block
+
+                Nothing ->
+                    Block.singleton
+
+        blocks =
+            Dict.insert id newBlock level.blocks
+
+        positions =
+            Dict.insert id position level.positions
+    in
+        { level | blocks = blocks, positions = positions }
+
+
+positionOf : MovableId -> Level -> Maybe Coordinate
+positionOf (MovableId id) level =
+    Dict.get id level.positions
 
 
 applyMoves : Moves -> Level -> Level
@@ -142,3 +183,31 @@ nextGravity rotation gravityDirection =
                 North
             else
                 South
+
+
+blockAt : Coordinate -> Level -> Bool
+blockAt position level =
+    let
+        blockAtHelp : Int -> Block -> Set Coordinate -> Set Coordinate
+        blockAtHelp id (Block.Block parts) coordinates =
+            case positionOf (MovableId id) level of
+                Just rootPosition ->
+                    let
+                        blockParts =
+                            List.map (coordinateAdd rootPosition) parts
+                    in
+                        coordinates
+                            |> Set.union (Set.fromList blockParts)
+                            |> Set.insert rootPosition
+
+                Nothing ->
+                    coordinates
+    in
+        level.blocks
+            |> Dict.foldl blockAtHelp Set.empty
+            |> Set.member position
+
+
+coordinateAdd : Coordinate -> Coordinate -> Coordinate
+coordinateAdd ( x1, y1 ) ( x2, y2 ) =
+    ( x1 + x2, y1 + y2 )
