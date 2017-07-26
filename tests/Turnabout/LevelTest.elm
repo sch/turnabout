@@ -1,4 +1,4 @@
-module LevelTest exposing (suite)
+module Turnabout.LevelTest exposing (suite)
 
 import Test exposing (..)
 import Expect
@@ -7,20 +7,6 @@ import Fixtures.Level
 import Turnabout.Level as Level
 import Turnabout.Level.Types exposing (..)
 import Turnabout.Moves as Moves
-
-
-fixture =
-    Dict.fromList
-        [ ( ( 0, 0 ), "a" )
-        , ( ( 0, 1 ), "b" )
-        , ( ( 1, 0 ), "c" )
-        , ( ( 1, 1 ), "d" )
-        ]
-
-
-twoDimensionalList =
-    [ [ "a", "b" ], [ "c", "d" ] ]
-
 
 
 -- SIDENOTE
@@ -56,11 +42,7 @@ newLevel =
 suite : Test
 suite =
     describe "Level data and generation"
-        [ test "it can convert a 2D array to a dict of coordinates" <|
-            \_ ->
-                Level.toCoordinateDict twoDimensionalList
-                    |> Expect.equal fixture
-        , test "Can apply game moves" <|
+        [ test "Can apply game moves" <|
             \_ ->
                 newLevel.movables
                     |> Expect.equal [ Goal Red ( 4, 4 ), Marble Red ( 1, 1 ) ]

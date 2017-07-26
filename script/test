@@ -1,6 +1,8 @@
 #!/bin/sh
 
-# script/test: Run tests for this project
+# script/test:        Run tests for this project
+#
+# script/test runner: Run tests for this project continuously
 
 set -e
 
@@ -8,4 +10,8 @@ cd "$(dirname "$0")/.."
 
 script/bootstrap
 
-npm test
+if [[ $1 == "runner" ]]; then
+  npm run test-runner
+else
+  npm test
+fi
