@@ -1,6 +1,6 @@
 module Turnabout.Level exposing (get, all, toCoordinateDict, applyMoves)
 
-import Turnabout.Cardinality exposing (Cardinality(..))
+import Turnabout.Direction exposing (Direction(..))
 import Turnabout.Moves exposing (Rotation(Clockwise, CounterClockwise), Moves)
 import Turnabout.Board as Board exposing (Board)
 import Turnabout.Level.Parser as Parser
@@ -47,7 +47,7 @@ applyMoves moves level =
     applyMovesHelp moves level South
 
 
-applyMovesHelp : Moves -> Level -> Cardinality -> Level
+applyMovesHelp : Moves -> Level -> Direction -> Level
 applyMovesHelp moves level gravity =
     case moves of
         [] ->
@@ -61,12 +61,12 @@ applyMovesHelp moves level gravity =
                 applyMovesHelp rest (shiftMovables g level) g
 
 
-shiftMovables : Cardinality -> Level -> Level
+shiftMovables : Direction -> Level -> Level
 shiftMovables direction level =
     { level | movables = List.map (moveUntilBlocked direction level) level.movables }
 
 
-moveUntilBlocked : Cardinality -> Level -> Movable -> Movable
+moveUntilBlocked : Direction -> Level -> Movable -> Movable
 moveUntilBlocked direction level movable =
     if isBlocked direction level movable then
         movable
@@ -88,7 +88,7 @@ moveUntilBlocked direction level movable =
 {-| Given a level and a movable, check to see if that movable has settled into
 a position where it can move no longer.
 -}
-isBlocked : Cardinality -> Level -> Movable -> Bool
+isBlocked : Direction -> Level -> Movable -> Bool
 isBlocked direction level movable =
     case movable of
         Marble color coordinate ->
@@ -123,7 +123,7 @@ occupying candidate movable =
 
 {-| The coordinate, moved one unit in the given direction
 -}
-moveOneUnit : Cardinality -> Coordinate -> Coordinate
+moveOneUnit : Direction -> Coordinate -> Coordinate
 moveOneUnit direction ( x, y ) =
     case direction of
         South ->
@@ -139,7 +139,7 @@ moveOneUnit direction ( x, y ) =
             ( x + 1, y )
 
 
-nextGravity : Rotation -> Cardinality -> Cardinality
+nextGravity : Rotation -> Direction -> Direction
 nextGravity rotation gravityDirection =
     case gravityDirection of
         South ->

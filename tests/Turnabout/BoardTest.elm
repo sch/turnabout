@@ -26,14 +26,16 @@ suite =
                     |> Expect.equal (Just Floor)
         , test "has a width and height" <|
             \_ ->
-                Board.empty
-                    |> Board.insertWall ( 1, 0 )
-                    |> Board.insertWall ( 0, 1 )
-                    |> Board.insertWall ( 2, 1 )
-                    |> Board.insertWall ( 1, 2 )
-                    |> Board.insertFloor ( 1, 1 )
-                    |> Board.size
-                    |> Expect.equal (Size 3 3)
+                let
+                    (Board.Board _ size) =
+                        Board.empty
+                            |> Board.insertWall ( 1, 0 )
+                            |> Board.insertWall ( 0, 1 )
+                            |> Board.insertWall ( 2, 1 )
+                            |> Board.insertWall ( 1, 2 )
+                            |> Board.insertFloor ( 1, 1 )
+                in
+                    Expect.equal (Size 3 3) size
         , test "can tell you if a coordinate is a wall" <|
             \_ ->
                 Board.empty

@@ -3,7 +3,7 @@ module Turnabout.MovesTest exposing (suite)
 import Test exposing (..)
 import Expect
 import Turnabout.Moves as Moves exposing (..)
-import Turnabout.Cardinality exposing (Cardinality(..))
+import Turnabout.Direction exposing (Direction(..))
 
 
 suite : Test
@@ -17,12 +17,12 @@ suite =
                     |> Moves.rotateClockwise
                     |> Moves.rotateClockwise
                     |> Moves.rotateClockwise
-                    |> Moves.toCardinality
+                    |> Moves.toDirection
                     |> Expect.equal West
         , test "Can determine cardinality by rotating counter-clockwise" <|
             \_ ->
                 Moves.initial
                     |> Moves.rotateCounterClockwise
-                    |> Moves.toCardinality
+                    |> Moves.toDirection
                     |> Expect.equal East
         ]

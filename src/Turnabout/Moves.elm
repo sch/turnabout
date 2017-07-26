@@ -8,10 +8,10 @@ module Turnabout.Moves
         , rotateCounterClockwise
         , undo
         , toDegrees
-        , toCardinality
+        , toDirection
         )
 
-import Turnabout.Cardinality exposing (Cardinality(..))
+import Turnabout.Direction exposing (Direction(..))
 
 
 type Rotation
@@ -63,8 +63,8 @@ rotationInDegrees rotation =
             -90
 
 
-toCardinality : Moves -> Cardinality
-toCardinality moves =
+toDirection : Moves -> Direction
+toDirection moves =
     case toDegrees moves % 360 of
         (-90) ->
             West
