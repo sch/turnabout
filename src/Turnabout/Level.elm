@@ -9,6 +9,7 @@ module Turnabout.Level
         , positionOf
         , blockAt
         , toBlockPairs
+        , toMarblePairs
         )
 
 import Turnabout.Extension exposing (zipDict)
@@ -57,3 +58,18 @@ blockAt =
 toBlockPairs : Level -> List ( Block, Model.Coordinate )
 toBlockPairs level =
     level.blocks |> zipDict level.positions
+
+
+toMarblePairs : Level -> List ( Model.Color, Model.Coordinate )
+toMarblePairs level =
+    List.filterMap takeMarble level.movables
+
+
+takeMarble : Model.Movable -> Maybe ( Model.Color, Model.Coordinate )
+takeMarble movable =
+    case movable of
+        Model.Marble color position ->
+            Just ( color, position )
+
+        _ ->
+            Nothing

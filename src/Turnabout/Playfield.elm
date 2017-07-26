@@ -136,11 +136,13 @@ update msg state =
 
         Appear ->
             let
-                property =
-                    Animation.to [ Animation.scale 1 ]
+                properties =
+                    [ Animation.set [ Animation.scale 0, Animation.rotate (deg 0) ]
+                    , Animation.to [ Animation.scale 1 ]
+                    ]
 
                 styles =
-                    Animation.queue [ property ] state.styles
+                    Animation.queue properties state.styles
             in
                 ( { state | styles = styles }, Cmd.none )
 
@@ -236,6 +238,7 @@ theBoardItself animationState level =
             [ lazy boardView level.board
             , movablesView level.movables
             , blocksView level
+            , marblesView level
             ]
     in
         Svg.g attributes children
@@ -281,6 +284,15 @@ blocksView level =
             level |> Level.toBlockPairs |> List.map (Block.view size)
     in
         Svg.g [] blocks
+
+
+marblesView : Level -> Svg msg
+marblesView level =
+    let
+        blocks =
+            level |> Level.toMarblePairs
+    in
+        Svg.g [] []
 
 
 movableView : Movable -> Svg a
@@ -331,6 +343,25 @@ svgMarble color ( x, y ) =
         , r (toString ((size - 1) // 2))
         ]
         []
+
+
+marbleView : Color -> List (Svg.Attribute msg) -> Svg msg
+marbleView color positionAttributes =
+    let
+        attributes =
+            List.append positionAttributes
+                [ fill (colorToHex color)
+                , r (toString ((size - 1) // 2))
+                ]
+    in
+        Svg.circle attributes []
+
+
+marblePosition : ( Int, Int ) -> List (Svg.Attribute msg)
+marblePosition ( x, y ) =
+    [ cx (toString ((x * size) + (size // 2)))
+    , cy (toString ((y * size) + (size // 2)))
+    ]
 
 
 toColor : Level.Color -> Color
