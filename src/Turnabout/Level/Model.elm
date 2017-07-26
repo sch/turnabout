@@ -82,22 +82,28 @@ getBlock (MovableId id) level =
 
 insertBlock : MovableId -> Coordinate -> Level -> Level
 insertBlock (MovableId id) position level =
-    let
-        newBlock =
-            case Dict.get id level.blocks of
-                Just block ->
-                    Block.withPart position block
+    case Dict.get id level.blocks of
+        Just block ->
+            let
+                offset =
+                    positionOf (MovableId id) level
+                        |> Maybe.withDefault ( 0, 0 )
 
-                Nothing ->
-                    Block.singleton
+                normalizedPosition =
+                    coordinateSubtract position offset
 
-        blocks =
-            Dict.insert id newBlock level.blocks
+                newBlock =
+                    Block.withPart normalizedPosition block
+            in
+                { level
+                    | blocks = Dict.insert id newBlock level.blocks
+                }
 
-        positions =
-            Dict.insert id position level.positions
-    in
-        { level | blocks = blocks, positions = positions }
+        Nothing ->
+            { level
+                | blocks = Dict.insert id Block.singleton level.blocks
+                , positions = Dict.insert id position level.positions
+            }
 
 
 positionOf : MovableId -> Level -> Maybe Coordinate
@@ -256,3 +262,8 @@ blockAt position level =
 coordinateAdd : Coordinate -> Coordinate -> Coordinate
 coordinateAdd ( x1, y1 ) ( x2, y2 ) =
     ( x1 + x2, y1 + y2 )
+
+
+coordinateSubtract : Coordinate -> Coordinate -> Coordinate
+coordinateSubtract ( x2, y2 ) ( x1, y1 ) =
+    ( x2 - x1, y2 - y1 )

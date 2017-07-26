@@ -14,7 +14,10 @@ import Turnabout.Level.Model as Model
 import Turnabout.Level.String as LevelStrings
 import Turnabout.Level.Parser as Parser
 
-type alias Level = Model.Level
+
+type alias Level =
+    Model.Level
+
 
 all : List Level
 all =
@@ -34,13 +37,14 @@ getBlock =
     Model.getBlock
 
 
-insertBlock : Int -> (Int, Int) -> Level -> Level
+insertBlock : Int -> ( Int, Int ) -> Level -> Level
 insertBlock id position level =
     Model.insertBlock (Model.MovableId id) position level
 
 
-positionOf =
-    Model.positionOf
+positionOf : Int -> Level -> Maybe Model.Coordinate
+positionOf id level =
+    Model.positionOf (Model.MovableId id) level
 
 
 blockAt =

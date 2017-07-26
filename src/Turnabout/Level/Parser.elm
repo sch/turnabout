@@ -1,12 +1,19 @@
 module Turnabout.Level.Parser exposing (parse)
 
 import Turnabout.Board as Board exposing (Board)
-import Turnabout.Level.Model as Model exposing (Level, Coordinate, Color(..), Movable(..))
+import Turnabout.Level.Model as Level
+    exposing
+        ( Level
+        , Coordinate
+        , Color(..)
+        , Movable(..)
+        , MovableId(..)
+        )
 
 
 parse : String -> Level
 parse levelString =
-    parseHelp ( Model.empty, (String.toList levelString), ( 0, 0 ) )
+    parseHelp ( Level.empty, (String.toList levelString), ( 0, 0 ) )
 
 
 parseHelp : ( Level, List Char, Coordinate ) -> Level
@@ -117,8 +124,9 @@ withGoal color index level =
 
 
 withBlock : Int -> Coordinate -> Level -> Level
-withBlock _ index level =
+withBlock blockId index level =
     level
+        |> Level.insertBlock (MovableId blockId) index
         |> withFloor index
 
 

@@ -65,4 +65,11 @@ suite =
                     |> Level.insertBlock 5 ( 6, 4 )
                     |> Level.blockAt ( 6, 4 )
                     |> Expect.true "Expected a block"
+        , test "treats the position of a block as the part occupying the top-left corner" <|
+            \_ ->
+                newLevel
+                    |> Level.insertBlock 5 ( 6, 3 )
+                    |> Level.insertBlock 5 ( 6, 4 )
+                    |> Level.positionOf 5
+                    |> Expect.equal (Just ( 6, 3 ))
         ]

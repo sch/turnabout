@@ -4,7 +4,7 @@ import Test exposing (..)
 import Expect
 import Turnabout.Board as Board exposing (Board, Tile(Wall, Floor))
 import Turnabout.Level.Parser as Parser
-import Turnabout.Level.Model exposing (Level, Coordinate, Movable(..), Color(..), BlockId(..))
+import Turnabout.Level.Model as Level exposing (Level, Coordinate, Movable(..), Color(..), BlockId(..))
 import Dict
 
 
@@ -75,10 +75,9 @@ suite =
                 Parser.parse oneMarble
                     |> .movables
                     |> Expect.equal [ Marble Red ( 2, 1 ) ]
-        , skip <|
-            test "can parse a board with marbles and blocks" <|
-                \_ ->
-                    Parser.parse oneMarble
-                        |> .movables
-                        |> Expect.notEqual []
+        , test "can parse a board with marbles and blocks" <|
+            \_ ->
+                Parser.parse wholeNineYards
+                    |> Level.blockAt ( 5, 2 )
+                    |> Expect.true "There should be a block at (5, 2)"
         ]
