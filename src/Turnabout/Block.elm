@@ -9,6 +9,9 @@ module Turnabout.Block
         )
 
 import Svg exposing (Svg)
+import Svg.Attributes as Attributes
+import Color
+import Color.Convert exposing (colorToHex)
 
 
 type Block
@@ -39,6 +42,13 @@ height (Block parts) =
     parts |> List.map Tuple.second |> List.maximum |> Maybe.withDefault 0 |> (+) 1
 
 
-view : Block -> Svg msg
-view block =
-    Svg.text "block"
+view : Int -> ( Block, ( Int, Int ) ) -> Svg msg
+view size ( block, ( x, y ) ) =
+    Svg.rect
+        [ Attributes.fill (colorToHex Color.brown)
+        , Attributes.x (toString (x * size + 1))
+        , Attributes.y (toString (y * size + 1))
+        , Attributes.width (toString ((width block * size) - 2))
+        , Attributes.height (toString ((height block * size) - 2))
+        ]
+        []

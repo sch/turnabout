@@ -8,8 +8,11 @@ module Turnabout.Level
         , insertBlock
         , positionOf
         , blockAt
+        , toBlockPairs
         )
 
+import Turnabout.Extension exposing (zipDict)
+import Turnabout.Block exposing (Block)
 import Turnabout.Level.Model as Model
 import Turnabout.Level.String as LevelStrings
 import Turnabout.Level.Parser as Parser
@@ -49,3 +52,8 @@ positionOf id level =
 
 blockAt =
     Model.blockAt
+
+
+toBlockPairs : Level -> List ( Block, Model.Coordinate )
+toBlockPairs level =
+    level.blocks |> zipDict level.positions

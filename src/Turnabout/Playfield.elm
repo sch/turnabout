@@ -19,6 +19,7 @@ import Color.Convert exposing (colorToHex)
 import Svg exposing (Svg)
 import Svg.Attributes exposing (..)
 import Svg.Lazy exposing (lazy)
+import Turnabout.Block as Block exposing (Block)
 import Turnabout.Board as Board exposing (Board)
 import Turnabout.Level as Level exposing (Level)
 import Turnabout.Level.Model as Level exposing (Movable(..))
@@ -234,6 +235,7 @@ theBoardItself animationState level =
         children =
             [ lazy boardView level.board
             , movablesView level.movables
+            , blocksView level
             ]
     in
         Svg.g attributes children
@@ -270,6 +272,15 @@ movablesView movables =
             List.map movableView movables
     in
         Svg.g [] items
+
+
+blocksView : Level -> Svg msg
+blocksView level =
+    let
+        blocks =
+            level |> Level.toBlockPairs |> List.map (Block.view size)
+    in
+        Svg.g [] blocks
 
 
 movableView : Movable -> Svg a
