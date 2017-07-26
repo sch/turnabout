@@ -1,22 +1,12 @@
-module Turnabout.Level.Parser exposing (parse, empty)
+module Turnabout.Level.Parser exposing (parse)
 
-import Dict exposing (Dict)
-import Turnabout.Level.Types exposing (..)
 import Turnabout.Board as Board exposing (Board)
-
-
-empty : Level
-empty =
-    { board = Board.empty
-    , movables = []
-    , blocks = Dict.empty
-    , positions = Dict.empty
-    }
+import Turnabout.Level.Model as Model exposing (Level, Coordinate, Color(..), Movable(..))
 
 
 parse : String -> Level
 parse levelString =
-    parseHelp ( empty, (String.toList levelString), ( 0, 0 ) )
+    parseHelp ( Model.empty, (String.toList levelString), ( 0, 0 ) )
 
 
 parseHelp : ( Level, List Char, Coordinate ) -> Level

@@ -4,7 +4,7 @@ import Test exposing (..)
 import Expect
 import Turnabout.Board as Board exposing (Board, Tile(Wall, Floor))
 import Turnabout.Level.Parser as Parser
-import Turnabout.Level.Types exposing (..)
+import Turnabout.Level.Model exposing (Level, Coordinate, Movable(..), Color(..), BlockId(..))
 import Dict
 
 

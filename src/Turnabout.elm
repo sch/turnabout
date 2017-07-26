@@ -6,8 +6,7 @@ import Html.Events as Events
 import Keyboard
 import Octicons
 import Turnabout.Playfield as Playfield
-import Turnabout.Level as Level
-import Turnabout.Level.Types exposing (Level)
+import Turnabout.Level as Level exposing (Level)
 import Turnabout.Moves as Moves exposing (Moves, Rotation(..))
 
 

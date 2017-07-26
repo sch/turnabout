@@ -16,12 +16,12 @@ import Animation exposing (Angle, deg)
 import Animation.Messenger
 import Color exposing (..)
 import Color.Convert exposing (colorToHex)
-import Dict
 import Svg exposing (Svg)
 import Svg.Attributes exposing (..)
 import Svg.Lazy exposing (lazy)
 import Turnabout.Board as Board exposing (Board)
-import Turnabout.Level.Types as Level exposing (Level)
+import Turnabout.Level as Level exposing (Level)
+import Turnabout.Level.Model as Level exposing (Movable(..))
 import Turnabout.Moves as Moves exposing (Moves)
 
 
@@ -263,7 +263,7 @@ tileColor tile =
             Color.darkGray
 
 
-movablesView : List Level.Movable -> Svg msg
+movablesView : List Movable -> Svg msg
 movablesView movables =
     let
         items =
@@ -272,16 +272,16 @@ movablesView movables =
         Svg.g [] items
 
 
-movableView : Level.Movable -> Svg a
+movableView : Movable -> Svg a
 movableView movable =
     case movable of
-        Level.Marble color coordinates ->
+        Marble color coordinates ->
             svgMarble (toColor color) coordinates
 
-        Level.Goal color coordinates ->
+        Goal color coordinates ->
             svgSquare (toColor color) coordinates
 
-        Level.Block _ _ ->
+        Block _ _ ->
             Svg.text ""
 
 

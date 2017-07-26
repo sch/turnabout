@@ -3,9 +3,9 @@ module Turnabout.LevelTest exposing (suite)
 import Test exposing (..)
 import Expect
 import Fixtures.Level
-import Turnabout.Level as Level
+import Turnabout.Level as Level exposing (Level)
+import Turnabout.Level.Model as Model exposing (Movable(..), Color(..), MovableId(..))
 import Turnabout.Block as Block
-import Turnabout.Level.Types exposing (..)
 import Turnabout.Moves as Moves
 
 
@@ -49,20 +49,20 @@ suite =
         , test "holds blocks" <|
             \_ ->
                 newLevel
-                    |> Level.insertBlock (MovableId 5) ( 6, 4 )
-                    |> Level.getBlock (MovableId 5)
+                    |> Level.insertBlock 5 ( 6, 4 )
+                    |> Model.getBlock (MovableId 5)
                     |> Expect.equal (Just Block.singleton)
         , test "holds positions of movable pieces" <|
             \_ ->
                 newLevel
-                    |> Level.insertBlock (MovableId 5) ( 6, 4 )
-                    |> Level.positionOf (MovableId 5)
+                    |> Level.insertBlock 5 ( 6, 4 )
+                    |> Model.positionOf (MovableId 5)
                     |> Expect.equal (Just ( 6, 4 ))
         , test "knows whether a block is occupying a space" <|
             \_ ->
                 newLevel
-                    |> Level.insertBlock (MovableId 5) ( 6, 3 )
-                    |> Level.insertBlock (MovableId 5) ( 6, 4 )
+                    |> Level.insertBlock 5 ( 6, 3 )
+                    |> Level.insertBlock 5 ( 6, 4 )
                     |> Level.blockAt ( 6, 4 )
                     |> Expect.true "Expected a block"
         ]
