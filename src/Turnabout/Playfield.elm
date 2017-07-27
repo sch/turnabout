@@ -227,7 +227,7 @@ updatePositons level positions =
 createInitialMovableStyles level =
     let
         interpolation =
-            Animation.spring { stiffness = 500, damping = 40 }
+            Animation.speed { perSecond = 500 }
     in
         level
             |> Level.toMarblePairs
