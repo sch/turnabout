@@ -81,7 +81,12 @@ update msg model =
         SelectLevel levelNumber ->
             let
                 ( playfield, cmd ) =
-                    Playfield.update Playfield.appear model.playfield
+                    case (Level.get levelNumber) of
+                        Just level ->
+                            Playfield.update (Playfield.appear level) model.playfield
+
+                        Nothing ->
+                            ( model.playfield, Cmd.none )
 
                 newModel =
                     { model

@@ -22,6 +22,7 @@ import Svg.Attributes exposing (..)
 import Svg.Lazy exposing (lazy)
 import Turnabout.Block as Block exposing (Block)
 import Turnabout.Board as Board exposing (Board)
+import Turnabout.Extension exposing (zipDict)
 import Turnabout.Level as Level exposing (Level)
 import Turnabout.Level.Model as Level exposing (Movable(..))
 import Turnabout.Moves as Moves exposing (Moves)
@@ -73,7 +74,7 @@ type Msg
     | AnimateMovables MovableId Animation.Msg
     | Rotate Moves
     | StartAnimatingMovables
-    | Appear
+    | Appear Level
     | Reset
 
 
@@ -89,8 +90,7 @@ initialState =
             [ Animation.rotate (deg 0)
             , Animation.scale 0
             ]
-    , animatedPositions =
-        Dict.singleton 1 (Animation.style [ Animation.scale 0.5 ])
+    , animatedPositions = Dict.empty
     }
 
 
@@ -112,9 +112,9 @@ rotate moves =
     Rotate moves
 
 
-appear : Msg
-appear =
-    Appear
+appear : Level -> Msg
+appear level =
+    Appear level
 
 
 reset : Msg
@@ -151,7 +151,7 @@ update msg state =
             in
                 ( { state | isAnimating = False, animatedPositions = positions }, Cmd.none )
 
-        Appear ->
+        Appear level ->
             let
                 properties =
                     [ Animation.set [ Animation.scale 0, Animation.rotate (deg 0) ]
@@ -160,8 +160,11 @@ update msg state =
 
                 styles =
                     Animation.queue properties state.styles
+
+                positions =
+                    createInitialMovableStyles level
             in
-                ( { state | styles = styles }, Cmd.none )
+                ( { state | styles = styles, animatedPositions = positions }, Cmd.none )
 
         Reset ->
             let
@@ -206,6 +209,17 @@ animateRotation moves style =
             ]
     in
         Animation.interrupt animationSteps style
+
+
+createInitialMovableStyles : Level -> Dict MovableId (Animation.Messenger.State Msg)
+createInitialMovableStyles level =
+    level
+        |> Level.toMarblePairs
+        |> List.indexedMap
+            (\index ( _, xy ) ->
+                ( index, Animation.styleWith spring (marblePositionProperties xy) )
+            )
+        |> Dict.fromList
 
 
 
@@ -278,17 +292,11 @@ theBoardItself state level =
         attributes =
             inlineStyles :: Animation.render state.styles
 
-        test =
-            state.animatedPositions
-                |> Dict.values
-                |> List.map (\style -> marbleView (rgb 249 180 250) (Animation.render style))
-
         children =
-            List.append test
             [ lazy boardView level.board
             , movablesView level.movables
             , blocksView level
-            , marblesView level
+            , marblesView level state.animatedPositions
             ]
     in
         Svg.g attributes children
@@ -336,13 +344,20 @@ blocksView level =
         Svg.g [] blocks
 
 
-marblesView : Level -> Svg msg
-marblesView level =
+marblesView : Level -> Dict Int (Animation.Messenger.State Msg) -> Svg msg
+marblesView level positions =
     let
+        marblesByIndex =
+            Debug.log "marbles by index" (Level.toMarblePairs level |> List.indexedMap (,) |> Dict.fromList)
+
+        _ =
+            Debug.log "positions" positions
+
         blocks =
-            level |> Level.toMarblePairs
+            zipDict positions marblesByIndex
+                |> List.map (\( ( color, _ ), xy ) -> marbleView (toColor color) (Animation.render xy))
     in
-        Svg.g [] []
+        Svg.g [] blocks
 
 
 movableView : Movable -> Svg a
@@ -396,15 +411,14 @@ svgMarble color ( x, y ) =
 
 
 marbleView : Color -> List (Svg.Attribute msg) -> Svg msg
-marbleView color positionAttributes =
+marbleView color attributes =
     let
-        attributes =
-            List.append positionAttributes
-                [ fill (colorToHex color)
-                , r (toString ((size - 1) // 2))
-                ]
+        initialAttributes =
+            [ fill (colorToHex color)
+            , r (toString ((size - 1) // 2))
+            ]
     in
-        Svg.circle attributes []
+        Svg.circle (attributes ++ initialAttributes) []
 
 
 marblePosition : ( Int, Int ) -> List (Svg.Attribute msg)
@@ -412,6 +426,21 @@ marblePosition ( x, y ) =
     [ cx (toString ((x * size) + (size // 2)))
     , cy (toString ((y * size) + (size // 2)))
     ]
+
+
+marblePositionProperties : ( Int, Int ) -> List Animation.Property
+marblePositionProperties ( x, y ) =
+    [ Animation.cx (toFloat ((x * size) + (size // 2)))
+    , Animation.cy (toFloat ((y * size) + (size // 2)))
+    ]
+
+
+queueAnimation :
+    List Animation.Property
+    -> Animation.Messenger.State Msg
+    -> Animation.Messenger.State Msg
+queueAnimation properties styles =
+    Animation.queue [ Animation.to properties ] styles
 
 
 toColor : Level.Color -> Color
