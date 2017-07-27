@@ -16,6 +16,7 @@ import Animation exposing (Angle, deg)
 import Animation.Messenger
 import Color exposing (..)
 import Color.Convert exposing (colorToHex)
+import Dict exposing (Dict)
 import Svg exposing (Svg)
 import Svg.Attributes exposing (..)
 import Svg.Lazy exposing (lazy)
@@ -59,13 +60,19 @@ type alias Point =
 type alias State =
     { isAnimating : Bool
     , styles : Animation.Messenger.State Msg
+    , animatedPositions : Dict Int (Animation.Messenger.State Msg)
     }
+
+
+type alias MovableId =
+    Int
 
 
 type Msg
     = Animate Animation.Msg
+    | AnimateMovables MovableId Animation.Msg
     | Rotate Moves
-    | AnimateMovables
+    | StartAnimatingMovables
     | Appear
     | Reset
 
@@ -82,6 +89,8 @@ initialState =
             [ Animation.rotate (deg 0)
             , Animation.scale 0
             ]
+    , animatedPositions =
+        Dict.singleton 1 (Animation.style [ Animation.scale 0.5 ])
     }
 
 
@@ -127,12 +136,20 @@ update msg state =
             in
                 ( { state | styles = styles, isAnimating = True }, Cmd.none )
 
-        AnimateMovables ->
+        StartAnimatingMovables ->
             let
-                _ =
-                    Debug.log "Animating movables now!" msg
+                setNewAnimatedPosition id position =
+                    let
+                        properties =
+                            [ Animation.to [ Animation.scale 1 ] ]
+                    in
+                        Animation.queue properties position
+
+                positions =
+                    state.animatedPositions
+                        |> Dict.map setNewAnimatedPosition
             in
-                ( { state | isAnimating = False }, Cmd.none )
+                ( { state | isAnimating = False, animatedPositions = positions }, Cmd.none )
 
         Appear ->
             let
@@ -163,6 +180,19 @@ update msg state =
             in
                 ( { state | styles = styles }, commands )
 
+        AnimateMovables id amount ->
+            let
+                updateAnimationDictionaryValue id positions =
+                    Animation.Messenger.update amount positions |> Tuple.first
+
+                newPositions =
+                    Dict.map updateAnimationDictionaryValue state.animatedPositions
+
+                newState =
+                    { state | animatedPositions = newPositions }
+            in
+                ( newState, Cmd.none )
+
 
 animateRotation : Moves -> Animation.Messenger.State Msg -> Animation.Messenger.State Msg
 animateRotation moves style =
@@ -172,7 +202,7 @@ animateRotation moves style =
 
         animationSteps =
             [ Animation.to [ Animation.rotate degrees ]
-            , Animation.Messenger.send AnimateMovables
+            , Animation.Messenger.send StartAnimatingMovables
             ]
     in
         Animation.interrupt animationSteps style
@@ -184,7 +214,21 @@ animateRotation moves style =
 
 subscriptions : State -> Sub Msg
 subscriptions state =
-    Animation.subscription Animate [ state.styles ]
+    Sub.batch
+        [ Animation.subscription Animate [ state.styles ]
+        , positionSubscriptions state.animatedPositions
+        ]
+
+
+positionSubscriptions : Dict MovableId (Animation.Messenger.State Msg) -> Sub Msg
+positionSubscriptions positions =
+    positions
+        |> Dict.foldl
+            (\id position list ->
+                (Animation.subscription (AnimateMovables id) [ position ]) :: list
+            )
+            []
+        |> Sub.batch
 
 
 
@@ -226,15 +270,21 @@ viewbox width height =
 
 
 theBoardItself : State -> Level -> Svg msg
-theBoardItself animationState level =
+theBoardItself state level =
     let
         inlineStyles =
             Svg.Attributes.style "transform-origin: center"
 
         attributes =
-            inlineStyles :: Animation.render animationState.styles
+            inlineStyles :: Animation.render state.styles
+
+        test =
+            state.animatedPositions
+                |> Dict.values
+                |> List.map (\style -> marbleView (rgb 249 180 250) (Animation.render style))
 
         children =
+            List.append test
             [ lazy boardView level.board
             , movablesView level.movables
             , blocksView level
