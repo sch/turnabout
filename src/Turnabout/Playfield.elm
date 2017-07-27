@@ -58,10 +58,14 @@ type alias Point =
     ( Int, Int )
 
 
+type alias AnimatedPositions =
+    Dict MovableId (Animation.Messenger.State Msg)
+
+
 type alias State =
     { isAnimating : Bool
     , styles : Animation.Messenger.State Msg
-    , animatedPositions : Dict Int (Animation.Messenger.State Msg)
+    , animatedPositions : AnimatedPositions
     }
 
 
@@ -72,8 +76,8 @@ type alias MovableId =
 type Msg
     = Animate Animation.Msg
     | AnimateMovables MovableId Animation.Msg
-    | Rotate Moves
-    | StartAnimatingMovables
+    | Rotate Moves Level
+    | StartAnimatingMovables Level
     | Appear Level
     | Reset
 
@@ -107,9 +111,9 @@ isAnimating state =
 -- COMMANDS
 
 
-rotate : Moves -> Msg
-rotate moves =
-    Rotate moves
+rotate : Moves -> Level -> Msg
+rotate moves level =
+    Rotate moves level
 
 
 appear : Level -> Msg
@@ -129,27 +133,19 @@ reset =
 update : Msg -> State -> ( State, Cmd Msg )
 update msg state =
     case msg of
-        Rotate moves ->
+        Rotate moves level ->
             let
                 styles =
-                    animateRotation moves state.styles
+                    animateRotation moves level state.styles
             in
                 ( { state | styles = styles, isAnimating = True }, Cmd.none )
 
-        StartAnimatingMovables ->
+        StartAnimatingMovables level ->
             let
-                setNewAnimatedPosition id position =
-                    let
-                        properties =
-                            [ Animation.to [ Animation.scale 1 ] ]
-                    in
-                        Animation.queue properties position
-
-                positions =
-                    state.animatedPositions
-                        |> Dict.map setNewAnimatedPosition
+                updatedPositions =
+                    updatePositons level state.animatedPositions
             in
-                ( { state | isAnimating = False, animatedPositions = positions }, Cmd.none )
+                ( { state | isAnimating = False, animatedPositions = updatedPositions }, Cmd.none )
 
         Appear level ->
             let
@@ -197,29 +193,49 @@ update msg state =
                 ( newState, Cmd.none )
 
 
-animateRotation : Moves -> Animation.Messenger.State Msg -> Animation.Messenger.State Msg
-animateRotation moves style =
+animateRotation : Moves -> Level -> Animation.Messenger.State Msg -> Animation.Messenger.State Msg
+animateRotation moves level style =
     let
         degrees =
             moves |> Moves.toDegrees |> toFloat |> deg
 
         animationSteps =
             [ Animation.to [ Animation.rotate degrees ]
-            , Animation.Messenger.send StartAnimatingMovables
+            , Animation.Messenger.send (StartAnimatingMovables level)
             ]
     in
         Animation.interrupt animationSteps style
 
 
-createInitialMovableStyles : Level -> Dict MovableId (Animation.Messenger.State Msg)
+updatePositons : Level -> AnimatedPositions -> AnimatedPositions
+updatePositons level positions =
+    let
+        marblesByIndex =
+            Level.toMarblePairs level |> List.indexedMap (,) |> Dict.fromList
+
+        updatePositons index styles =
+            case (Dict.get index marblesByIndex) of
+                Just ( _, position ) ->
+                    queueAnimation (marblePositionProperties position) styles
+
+                Nothing ->
+                    styles
+    in
+        Dict.map updatePositons positions
+
+
 createInitialMovableStyles level =
-    level
-        |> Level.toMarblePairs
-        |> List.indexedMap
-            (\index ( _, xy ) ->
-                ( index, Animation.styleWith spring (marblePositionProperties xy) )
-            )
-        |> Dict.fromList
+    let
+        interpolation =
+            Animation.spring { stiffness = 500, damping = 40 }
+    in
+        level
+            |> Level.toMarblePairs
+            |> List.indexedMap
+                (\index ( _, xy ) ->
+                    ( index, Animation.styleWith interpolation (marblePositionProperties xy) )
+                )
+            |> Dict.fromList
 
 
 
@@ -344,18 +360,19 @@ blocksView level =
         Svg.g [] blocks
 
 
-marblesView : Level -> Dict Int (Animation.Messenger.State Msg) -> Svg msg
+marblesView : Level -> AnimatedPositions -> Svg msg
 marblesView level positions =
     let
         marblesByIndex =
-            Debug.log "marbles by index" (Level.toMarblePairs level |> List.indexedMap (,) |> Dict.fromList)
+            Level.toMarblePairs level |> List.indexedMap (,) |> Dict.fromList
 
-        _ =
-            Debug.log "positions" positions
-
+        -- ugh
         blocks =
             zipDict positions marblesByIndex
-                |> List.map (\( ( color, _ ), xy ) -> marbleView (toColor color) (Animation.render xy))
+                |> List.map
+                    (\( ( color, _ ), xy ) ->
+                        marbleView (toColor color) (Animation.render xy)
+                    )
     in
         Svg.g [] blocks
 
@@ -364,7 +381,7 @@ movableView : Movable -> Svg a
 movableView movable =
     case movable of
         Marble color coordinates ->
-            svgMarble (toColor color) coordinates
+            Svg.text ""
 
         Goal color coordinates ->
             svgSquare (toColor color) coordinates

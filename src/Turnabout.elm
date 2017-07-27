@@ -7,6 +7,7 @@ import Keyboard
 import Octicons
 import Turnabout.Playfield as Playfield
 import Turnabout.Level as Level exposing (Level)
+import Turnabout.Level.Model as LevelModel
 import Turnabout.Moves as Moves exposing (Moves, Rotation(..))
 
 
@@ -58,7 +59,16 @@ update msg model =
                     Moves.rotate rotation model.moves
 
                 ( playfield, cmd ) =
-                    Playfield.update (Playfield.rotate moves) model.playfield
+                    case (Level.get (Maybe.withDefault 1 model.currentLevel)) of
+                        Just initialLevel ->
+                            let
+                                level =
+                                    Level.applyMoves moves initialLevel
+                            in
+                                Playfield.update (Playfield.rotate moves level) model.playfield
+
+                        Nothing ->
+                            ( model.playfield, Cmd.none )
 
                 command =
                     Cmd.map PlayfieldMessage cmd
@@ -71,7 +81,7 @@ update msg model =
                     Moves.undo model.moves
 
                 ( playfield, cmd ) =
-                    Playfield.update (Playfield.rotate moves) model.playfield
+                    Playfield.update (Playfield.rotate moves LevelModel.empty) model.playfield
 
                 command =
                     Cmd.map PlayfieldMessage cmd
