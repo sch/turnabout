@@ -100,6 +100,9 @@ parseHelp construct =
                         '9' ->
                             level |> withBlock 9 index
 
+                        '0' ->
+                            level |> withBlock 0 index
+
                         '#' ->
                             level |> withWall index
 

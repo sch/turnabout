@@ -11,13 +11,6 @@ import Turnabout.Level.Model as LevelModel
 import Turnabout.Moves as Moves exposing (Moves, Rotation(..))
 
 
-type Cardinality
-    = North
-    | South
-    | East
-    | West
-
-
 type Msg
     = Rotate Rotation
     | Undo
@@ -34,8 +27,7 @@ type Key
 
 
 type alias Model =
-    { gravity : Cardinality
-    , currentLevel : Maybe Int
+    { currentLevel : Maybe Int
     , moves : Moves
     , playfield : Playfield.State
     }
@@ -43,8 +35,7 @@ type alias Model =
 
 initialState : Model
 initialState =
-    { gravity = South
-    , currentLevel = Nothing
+    { currentLevel = Nothing
     , moves = Moves.initial
     , playfield = Playfield.initialState
     }
