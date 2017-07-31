@@ -115,6 +115,7 @@ parseHelp construct =
 withMarble : Marble -> Coordinate -> Level -> Level
 withMarble marble index level =
     { level | movables = ((Murble marble index) :: level.movables) }
+        |> Level.withMarble marble index
         |> withFloor index
 
 

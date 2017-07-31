@@ -3,6 +3,7 @@ module Turnabout.LevelTest exposing (suite)
 import Test exposing (..)
 import Expect
 import Fixtures.Level
+import Dict
 import Turnabout.Level as Level exposing (Level)
 import Turnabout.Color as Color
 import Turnabout.Level.Model as Model exposing (Movable(..), MovableId(..))
@@ -77,4 +78,9 @@ suite =
                     |> Level.insertBlock 5 ( 6, 4 )
                     |> Level.positionOf 5
                     |> Expect.equal (Ok ( 6, 3 ))
+        , test "starts marble ids at 10" <|
+            \_ ->
+                newLevel
+                    |> .marbles
+                    |> Expect.equal (Dict.singleton 10 Marble.red)
         ]

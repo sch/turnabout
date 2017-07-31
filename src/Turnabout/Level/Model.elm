@@ -10,6 +10,7 @@ module Turnabout.Level.Model
         , insertBlock
         , positionOf
         , blockAt
+        , withMarble
         )
 
 import Dict exposing (Dict)
@@ -33,12 +34,6 @@ type Movable
     | Goal Color Coordinate
 
 
-type Parseable
-    = Tile
-    | Movable
-    | Empty
-
-
 type alias Id =
     Int
 
@@ -54,6 +49,7 @@ type MovableId
 type alias Level =
     { board : Board
     , movables : List Movable
+    , marbles : Dict Id Marble
     , blocks : Dict Id Block
     , positions : Dict Id Coordinate
     }
@@ -63,6 +59,7 @@ empty : Level
 empty =
     { board = Board.empty
     , movables = []
+    , marbles = Dict.empty
     , blocks = Dict.empty
     , positions = Dict.empty
     }
@@ -71,6 +68,31 @@ empty =
 getBlock : MovableId -> Level -> Maybe Block
 getBlock (MovableId id) level =
     Dict.get id level.blocks
+
+
+nextId : Level -> Id
+nextId level =
+    level
+        |> .positions
+        |> Dict.keys
+        |> List.maximum
+        |> Maybe.withDefault 9
+        |> (+) 1
+
+
+{-| Inserts a marble into the Level, inferrring the id -}
+withMarble : Marble -> Coordinate -> Level -> Level
+withMarble marble position level =
+    insertMarble (nextId level) marble position level
+
+
+{-| Inserts a marble into the Level, with an explicit id -}
+insertMarble : Id -> Marble -> Coordinate -> Level -> Level
+insertMarble id marble position level =
+    { level
+        | marbles = Dict.insert id marble level.marbles
+        , positions = Dict.insert id position level.positions
+    }
 
 
 {-| If we know a block's id already (like when we're parsing a level string) we
