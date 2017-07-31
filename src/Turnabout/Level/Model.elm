@@ -1,7 +1,6 @@
 module Turnabout.Level.Model
     exposing
         ( Level
-        , Coordinate
         , Color(..)
         , Movable(..)
         , MovableId(..)
@@ -17,6 +16,7 @@ module Turnabout.Level.Model
 import Dict exposing (Dict)
 import Set exposing (Set)
 import Turnabout.Direction exposing (Direction(..))
+import Turnabout.Coordinate as Coordinate exposing (Coordinate)
 import Turnabout.Moves exposing (Rotation(Clockwise, CounterClockwise), Moves)
 import Turnabout.Block as Block exposing (Block)
 import Turnabout.Board as Board exposing (Board)
@@ -50,20 +50,8 @@ type alias Id =
     Int
 
 
-type alias LevelDB =
-    { board : Board
-    , entities : Dict Id Movable
-    , positions : Dict Coordinate Id
-    , gravity : Direction
-    }
-
-
 type alias Size =
     { width : Int, height : Int }
-
-
-type alias Coordinate =
-    ( Int, Int )
 
 
 type MovableId
@@ -73,8 +61,8 @@ type MovableId
 type alias Level =
     { board : Board
     , movables : List Movable
-    , blocks : Dict Int Block
-    , positions : Dict Int Coordinate
+    , blocks : Dict Id Block
+    , positions : Dict Id Coordinate
     }
 
 
@@ -128,7 +116,7 @@ growExistingBlock id block position level =
         Ok offset ->
             let
                 normalizedPosition =
-                    coordinateSubtract position offset
+                    Coordinate.subtract position offset
 
                 newBlock =
                     Block.withPart normalizedPosition block
@@ -180,7 +168,7 @@ moveUntilBlocked direction level movable =
                 moveUntilBlocked
                     direction
                     level
-                    (Marble color (moveOneUnit direction coordinate))
+                    (Marble color (Coordinate.byOne direction coordinate))
 
             Goal _ coordinate ->
                 movable
@@ -198,7 +186,7 @@ isBlocked direction level movable =
         Marble color coordinate ->
             let
                 nextSpace =
-                    moveOneUnit direction coordinate
+                    Coordinate.byOne direction coordinate
             in
                 (level.board |> Board.isWall nextSpace)
                     || List.any (occupying nextSpace) level.movables
@@ -223,24 +211,6 @@ occupying candidate movable =
 
         Block _ coordinates ->
             List.any (flip (==) candidate) coordinates
-
-
-{-| The coordinate, moved one unit in the given direction
--}
-moveOneUnit : Direction -> Coordinate -> Coordinate
-moveOneUnit direction ( x, y ) =
-    case direction of
-        South ->
-            ( x, y + 1 )
-
-        West ->
-            ( x - 1, y )
-
-        North ->
-            ( x, y - 1 )
-
-        East ->
-            ( x + 1, y )
 
 
 nextGravity : Rotation -> Direction -> Direction
@@ -280,7 +250,7 @@ blockAt position level =
                 Ok rootPosition ->
                     let
                         blockParts =
-                            List.map (coordinateAdd rootPosition) parts
+                            List.map (Coordinate.add rootPosition) parts
                     in
                         coordinates
                             |> Set.union (Set.fromList blockParts)
@@ -292,13 +262,3 @@ blockAt position level =
         level.blocks
             |> Dict.foldl blockAtHelp Set.empty
             |> Set.member position
-
-
-coordinateAdd : Coordinate -> Coordinate -> Coordinate
-coordinateAdd ( x1, y1 ) ( x2, y2 ) =
-    ( x1 + x2, y1 + y2 )
-
-
-coordinateSubtract : Coordinate -> Coordinate -> Coordinate
-coordinateSubtract ( x2, y2 ) ( x1, y1 ) =
-    ( x2 - x1, y2 - y1 )

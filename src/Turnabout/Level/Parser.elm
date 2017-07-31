@@ -1,10 +1,10 @@
 module Turnabout.Level.Parser exposing (parse)
 
 import Turnabout.Board as Board exposing (Board)
+import Turnabout.Coordinate exposing (Coordinate)
 import Turnabout.Level.Model as Level
     exposing
         ( Level
-        , Coordinate
         , Color(..)
         , Movable(..)
         , MovableId(..)
