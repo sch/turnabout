@@ -4,9 +4,11 @@ import Test exposing (..)
 import Expect
 import Fixtures.Level
 import Turnabout.Level as Level exposing (Level)
-import Turnabout.Level.Model as Model exposing (Movable(..), Color(..), MovableId(..))
+import Turnabout.Color as Color
+import Turnabout.Level.Model as Model exposing (Movable(..), MovableId(..))
 import Turnabout.Block as Block
 import Turnabout.Moves as Moves
+import Turnabout.Marble as Marble
 
 
 -- SIDENOTE
@@ -45,7 +47,10 @@ suite =
         [ test "Can apply game moves" <|
             \_ ->
                 newLevel.movables
-                    |> Expect.equal [ Goal Red ( 4, 4 ), Marble Red ( 1, 1 ) ]
+                    |> Expect.equal
+                        [ Goal Color.Red ( 4, 4 )
+                        , (Murble (Marble.red) ( 1, 1 ))
+                        ]
         , test "holds blocks" <|
             \_ ->
                 newLevel

@@ -22,6 +22,9 @@ import Svg.Attributes exposing (..)
 import Svg.Lazy exposing (lazy)
 import Turnabout.Block as Block exposing (Block)
 import Turnabout.Board as Board exposing (Board)
+import Turnabout.Color
+import Turnabout.Coordinate exposing (Coordinate)
+import Turnabout.Marble as Marble
 import Turnabout.Extension exposing (zipDict)
 import Turnabout.Level as Level exposing (Level)
 import Turnabout.Level.Model as Level exposing (Movable(..))
@@ -216,7 +219,7 @@ updatePositons level positions =
         updatePositons index styles =
             case (Dict.get index marblesByIndex) of
                 Just ( _, position ) ->
-                    queueAnimation (marblePositionProperties position) styles
+                    queueAnimation (positionProperties position) styles
 
                 Nothing ->
                     styles
@@ -224,6 +227,7 @@ updatePositons level positions =
         Dict.map updatePositons positions
 
 
+createInitialMovableStyles : Level -> AnimatedPositions
 createInitialMovableStyles level =
     let
         interpolation =
@@ -233,7 +237,7 @@ createInitialMovableStyles level =
             |> Level.toMarblePairs
             |> List.indexedMap
                 (\index ( _, xy ) ->
-                    ( index, Animation.styleWith interpolation (marblePositionProperties xy) )
+                    ( index, Animation.styleWith interpolation (positionProperties xy) )
                 )
             |> Dict.fromList
 
@@ -370,8 +374,8 @@ marblesView level positions =
         blocks =
             zipDict positions marblesByIndex
                 |> List.map
-                    (\( ( color, _ ), xy ) ->
-                        marbleView (toColor color) (Animation.render xy)
+                    (\( ( marble, _ ), xy ) ->
+                        Svg.svg (Animation.render xy) [ (Marble.view marble) ]
                     )
     in
         Svg.g [] blocks
@@ -380,11 +384,11 @@ marblesView level positions =
 movableView : Movable -> Svg a
 movableView movable =
     case movable of
-        Marble color coordinates ->
+        Murble _ _ ->
             Svg.text ""
 
         Goal color coordinates ->
-            svgSquare (toColor color) coordinates
+            svgSquare (Turnabout.Color.toRgb color) coordinates
 
         Block _ _ ->
             Svg.text ""
@@ -416,39 +420,10 @@ svgRoundedSquare color ( gridX, gridY ) =
         []
 
 
-svgMarble : Color -> Point -> Svg msg
-svgMarble color ( x, y ) =
-    Svg.circle
-        [ fill (colorToHex color)
-        , cx (toString ((x * size) + (size // 2)))
-        , cy (toString ((y * size) + (size // 2)))
-        , r (toString ((size - 1) // 2))
-        ]
-        []
-
-
-marbleView : Color -> List (Svg.Attribute msg) -> Svg msg
-marbleView color attributes =
-    let
-        initialAttributes =
-            [ fill (colorToHex color)
-            , r (toString ((size - 1) // 2))
-            ]
-    in
-        Svg.circle (attributes ++ initialAttributes) []
-
-
-marblePosition : ( Int, Int ) -> List (Svg.Attribute msg)
-marblePosition ( x, y ) =
-    [ cx (toString ((x * size) + (size // 2)))
-    , cy (toString ((y * size) + (size // 2)))
-    ]
-
-
-marblePositionProperties : ( Int, Int ) -> List Animation.Property
-marblePositionProperties ( x, y ) =
-    [ Animation.cx (toFloat ((x * size) + (size // 2)))
-    , Animation.cy (toFloat ((y * size) + (size // 2)))
+positionProperties : Coordinate -> List Animation.Property
+positionProperties ( x, y ) =
+    [ Animation.x (toFloat (x * size))
+    , Animation.y (toFloat (y * size))
     ]
 
 
@@ -458,22 +433,3 @@ queueAnimation :
     -> Animation.Messenger.State Msg
 queueAnimation properties styles =
     Animation.queue [ Animation.to properties ] styles
-
-
-toColor : Level.Color -> Color
-toColor color =
-    case color of
-        Level.Red ->
-            rgb 208 73 66
-
-        Level.Green ->
-            rgb 164 255 237
-
-        Level.Blue ->
-            rgb 55 144 242
-
-        Level.Yellow ->
-            rgb 247 179 74
-
-        Level.Purple ->
-            rgb 249 180 250

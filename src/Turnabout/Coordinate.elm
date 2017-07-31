@@ -1,10 +1,4 @@
-module Turnabout.Coordinate
-    exposing
-        ( Coordinate
-        , add
-        , subtract
-        , byOne
-        )
+module Turnabout.Coordinate exposing (Coordinate, add, subtract, byOne)
 
 import Turnabout.Direction exposing (Direction(..))
 
@@ -12,11 +6,14 @@ import Turnabout.Direction exposing (Direction(..))
 type alias Coordinate =
     ( Int, Int )
 
-type alias Distance = Int
+
+type alias Distance =
+    Int
+
 
 {-| The coordinate, moved one unit in the given direction
 -}
-by: Distance -> Direction -> Coordinate -> Coordinate
+by : Distance -> Direction -> Coordinate -> Coordinate
 by distance direction ( x, y ) =
     case direction of
         South ->
@@ -35,7 +32,9 @@ by distance direction ( x, y ) =
 {-| The coordinate, moved one unit in the given direction
 -}
 byOne : Direction -> Coordinate -> Coordinate
-byOne = by 1
+byOne =
+    by 1
+
 
 add : Coordinate -> Coordinate -> Coordinate
 add ( x1, y1 ) ( x2, y2 ) =

@@ -2,10 +2,11 @@ module Turnabout.Level.Parser exposing (parse)
 
 import Turnabout.Board as Board exposing (Board)
 import Turnabout.Coordinate exposing (Coordinate)
+import Turnabout.Color as Color exposing (Color)
+import Turnabout.Marble as Marble exposing (Marble)
 import Turnabout.Level.Model as Level
     exposing
         ( Level
-        , Color(..)
         , Movable(..)
         , MovableId(..)
         )
@@ -43,34 +44,34 @@ parseHelp construct =
                 newLevel =
                     case char of
                         'r' ->
-                            level |> withMarble Red index
+                            level |> withMarble Marble.red index
 
                         'g' ->
-                            level |> withMarble Green index
+                            level |> withMarble Marble.green index
 
                         'b' ->
-                            level |> withMarble Blue index
+                            level |> withMarble Marble.blue index
 
                         'y' ->
-                            level |> withMarble Yellow index
+                            level |> withMarble Marble.yellow index
 
                         'p' ->
-                            level |> withMarble Purple index
+                            level |> withMarble Marble.purple index
 
                         'R' ->
-                            level |> withGoal Red index
+                            level |> withGoal Color.Red index
 
                         'G' ->
-                            level |> withGoal Green index
+                            level |> withGoal Color.Green index
 
                         'B' ->
-                            level |> withGoal Blue index
+                            level |> withGoal Color.Blue index
 
                         'Y' ->
-                            level |> withGoal Yellow index
+                            level |> withGoal Color.Yellow index
 
                         'P' ->
-                            level |> withGoal Purple index
+                            level |> withGoal Color.Purple index
 
                         '1' ->
                             level |> withBlock 1 index
@@ -111,9 +112,9 @@ parseHelp construct =
                 parseHelp ( newLevel, rest, nextIndex )
 
 
-withMarble : Color -> Coordinate -> Level -> Level
-withMarble color index level =
-    { level | movables = (Marble color index :: level.movables) }
+withMarble : Marble -> Coordinate -> Level -> Level
+withMarble marble index level =
+    { level | movables = ((Murble marble index) :: level.movables) }
         |> withFloor index
 
 

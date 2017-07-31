@@ -1,7 +1,6 @@
 module Turnabout.Level.Model
     exposing
         ( Level
-        , Color(..)
         , Movable(..)
         , MovableId(..)
         , BlockId(..)
@@ -17,17 +16,11 @@ import Dict exposing (Dict)
 import Set exposing (Set)
 import Turnabout.Direction exposing (Direction(..))
 import Turnabout.Coordinate as Coordinate exposing (Coordinate)
+import Turnabout.Marble exposing (Marble)
 import Turnabout.Moves exposing (Rotation(Clockwise, CounterClockwise), Moves)
 import Turnabout.Block as Block exposing (Block)
+import Turnabout.Color exposing (Color)
 import Turnabout.Board as Board exposing (Board)
-
-
-type Color
-    = Red
-    | Green
-    | Blue
-    | Yellow
-    | Purple
 
 
 type BlockId
@@ -35,7 +28,7 @@ type BlockId
 
 
 type Movable
-    = Marble Color Coordinate
+    = Murble Marble Coordinate
     | Block BlockId (List Coordinate)
     | Goal Color Coordinate
 
@@ -105,6 +98,7 @@ insertNewBlock id position level =
         , positions = Dict.insert id position level.positions
     }
 
+
 {-| When we have an existing block, and we want it to take up more space, we
 figure out the position of the new block part relative to the top-left corner
 of the existing block, and update the block with the new part. Since the block
@@ -125,7 +119,6 @@ growExistingBlock id block position level =
 
         Err message ->
             Debug.crash message
-
 
 
 positionOf : MovableId -> Level -> Result String Coordinate
@@ -164,11 +157,11 @@ moveUntilBlocked direction level movable =
         movable
     else
         case movable of
-            Marble color coordinate ->
+            Murble marble coordinate ->
                 moveUntilBlocked
                     direction
                     level
-                    (Marble color (Coordinate.byOne direction coordinate))
+                    (Murble marble (Coordinate.byOne direction coordinate))
 
             Goal _ coordinate ->
                 movable
@@ -183,7 +176,7 @@ a position where it can move no longer.
 isBlocked : Direction -> Level -> Movable -> Bool
 isBlocked direction level movable =
     case movable of
-        Marble color coordinate ->
+        Murble _ coordinate ->
             let
                 nextSpace =
                     Coordinate.byOne direction coordinate
@@ -203,7 +196,7 @@ isBlocked direction level movable =
 occupying : Coordinate -> Movable -> Bool
 occupying candidate movable =
     case movable of
-        Marble _ coordinate ->
+        Murble _ coordinate ->
             coordinate == candidate
 
         Goal _ coordinate ->

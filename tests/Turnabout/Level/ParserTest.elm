@@ -3,8 +3,10 @@ module Turnabout.Level.ParserTest exposing (suite)
 import Test exposing (..)
 import Expect
 import Turnabout.Board as Board exposing (Board, Tile(Wall, Floor))
+import Turnabout.Color as Color
+import Turnabout.Marble as Marble
 import Turnabout.Level.Parser as Parser
-import Turnabout.Level.Model as Level exposing (Level, Movable(..), Color(..), BlockId(..))
+import Turnabout.Level.Model as Level exposing (Level, Movable(..), BlockId(..))
 
 
 twoByTwoWalls : String
@@ -40,10 +42,10 @@ wholeNineYards =
 
 wholeNineYardsMovables : List Movable
 wholeNineYardsMovables =
-    [ Marble Red ( 1, 2 )
-    , Marble Blue ( 1, 6 )
-    , Goal Red ( 1, 6 )
-    , Goal Blue ( 6, 6 )
+    [ Murble Marble.red ( 1, 2 )
+    , Murble Marble.blue ( 1, 6 )
+    , Goal Color.Red ( 1, 6 )
+    , Goal Color.Blue ( 6, 6 )
     , Block (BlockId 1)
         [ ( 4, 2 )
         , ( 5, 2 )
@@ -73,7 +75,7 @@ suite =
             \_ ->
                 Parser.parse oneMarble
                     |> .movables
-                    |> Expect.equal [ Marble Red ( 2, 1 ) ]
+                    |> Expect.equal [ Murble Marble.red ( 2, 1 ) ]
         , test "can parse a board with marbles and blocks" <|
             \_ ->
                 Parser.parse wholeNineYards
