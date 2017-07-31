@@ -80,13 +80,15 @@ nextId level =
         |> (+) 1
 
 
-{-| Inserts a marble into the Level, inferrring the id -}
+{-| Inserts a marble into the Level, inferrring the id
+-}
 withMarble : Marble -> Coordinate -> Level -> Level
 withMarble marble position level =
     insertMarble (nextId level) marble position level
 
 
-{-| Inserts a marble into the Level, with an explicit id -}
+{-| Inserts a marble into the Level, with an explicit id
+-}
 insertMarble : Id -> Marble -> Coordinate -> Level -> Level
 insertMarble id marble position level =
     { level
