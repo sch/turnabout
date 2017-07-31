@@ -46,6 +46,18 @@ type Parseable
     | Empty
 
 
+type alias Id =
+    Int
+
+
+type alias LevelDB =
+    { board : Board
+    , entities : Dict Id Movable
+    , positions : Dict Coordinate Id
+    , gravity : Direction
+    }
+
+
 type alias Size =
     { width : Int, height : Int }
 
@@ -80,35 +92,58 @@ getBlock (MovableId id) level =
     Dict.get id level.blocks
 
 
+{-| If we know a block's id already (like when we're parsing a level string) we
+either want to create an instance and set ts position, or if it's already part
+of some existing block group, we want to grow that block group with the new
+position.
+-}
 insertBlock : MovableId -> Coordinate -> Level -> Level
 insertBlock (MovableId id) position level =
     case Dict.get id level.blocks of
         Just block ->
-            let
-                offset =
-                    positionOf (MovableId id) level
-                        |> Maybe.withDefault ( 0, 0 )
+            growExistingBlock id block position level
 
+        Nothing ->
+            insertNewBlock id position level
+
+
+{-| When a block has an ID, but no instance represented in the level yet, we
+make an instance and set its location.
+-}
+insertNewBlock : Int -> Coordinate -> Level -> Level
+insertNewBlock id position level =
+    { level
+        | blocks = Dict.insert id Block.singleton level.blocks
+        , positions = Dict.insert id position level.positions
+    }
+
+{-| When we have an existing block, and we want it to take up more space, we
+figure out the position of the new block part relative to the top-left corner
+of the existing block, and update the block with the new part. Since the block
+is already positioned, we only care about the block itself.
+-}
+growExistingBlock : Int -> Block -> Coordinate -> Level -> Level
+growExistingBlock id block position level =
+    case positionOf (MovableId id) level of
+        Ok offset ->
+            let
                 normalizedPosition =
                     coordinateSubtract position offset
 
                 newBlock =
                     Block.withPart normalizedPosition block
             in
-                { level
-                    | blocks = Dict.insert id newBlock level.blocks
-                }
+                { level | blocks = Dict.insert id newBlock level.blocks }
 
-        Nothing ->
-            { level
-                | blocks = Dict.insert id Block.singleton level.blocks
-                , positions = Dict.insert id position level.positions
-            }
+        Err message ->
+            Debug.crash message
 
 
-positionOf : MovableId -> Level -> Maybe Coordinate
+
+positionOf : MovableId -> Level -> Result String Coordinate
 positionOf (MovableId id) level =
     Dict.get id level.positions
+        |> Result.fromMaybe ("Position for movable with id " ++ (toString id) ++ "doesn't exist")
 
 
 applyMoves : Moves -> Level -> Level
@@ -242,7 +277,7 @@ blockAt position level =
         blockAtHelp : Int -> Block -> Set Coordinate -> Set Coordinate
         blockAtHelp id (Block.Block parts) coordinates =
             case positionOf (MovableId id) level of
-                Just rootPosition ->
+                Ok rootPosition ->
                     let
                         blockParts =
                             List.map (coordinateAdd rootPosition) parts
@@ -251,8 +286,8 @@ blockAt position level =
                             |> Set.union (Set.fromList blockParts)
                             |> Set.insert rootPosition
 
-                Nothing ->
-                    coordinates
+                Err message ->
+                    Debug.crash message
     in
         level.blocks
             |> Dict.foldl blockAtHelp Set.empty

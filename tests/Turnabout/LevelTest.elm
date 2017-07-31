@@ -57,7 +57,7 @@ suite =
                 newLevel
                     |> Level.insertBlock 5 ( 6, 4 )
                     |> Model.positionOf (MovableId 5)
-                    |> Expect.equal (Just ( 6, 4 ))
+                    |> Expect.equal (Ok ( 6, 4 ))
         , test "knows whether a block is occupying a space" <|
             \_ ->
                 newLevel
@@ -71,5 +71,5 @@ suite =
                     |> Level.insertBlock 5 ( 6, 3 )
                     |> Level.insertBlock 5 ( 6, 4 )
                     |> Level.positionOf 5
-                    |> Expect.equal (Just ( 6, 3 ))
+                    |> Expect.equal (Ok ( 6, 3 ))
         ]

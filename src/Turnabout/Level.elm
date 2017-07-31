@@ -46,7 +46,7 @@ insertBlock id position level =
     Model.insertBlock (Model.MovableId id) position level
 
 
-positionOf : Int -> Level -> Maybe Model.Coordinate
+positionOf : Int -> Level -> Result String Model.Coordinate
 positionOf id level =
     Model.positionOf (Model.MovableId id) level
 
