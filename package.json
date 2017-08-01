@@ -3,7 +3,7 @@
   "version": "1.0.0",
   "scripts": {
     "install-elm-packages": "elm-package install --yes",
-    "start": "elm-reactor --address=0.0.0.0 --port=9000",
+    "start": "elm-live src/Main.elm --output build/main.js --pushstate --dir=build --host=0.0.0.0 --port=9000 --debug",
     "build": "elm-make src/Main.elm --output build/main.js",
     "minify": "google-closure-compiler-js build/main.js > build/main.min.js",
     "test": "elm-test",
@@ -20,6 +20,7 @@
   "homepage": "https://adrian.schaedle.me/turnabout",
   "devDependencies": {
     "elm": "^0.18.0",
+    "elm-live": "^2.7.5",
     "elm-test": "^0.18.7",
     "google-closure-compiler-js": "^20170626.0.0"
   }
