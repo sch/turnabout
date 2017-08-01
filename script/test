@@ -10,8 +10,10 @@ cd "$(dirname "$0")/.."
 
 script/bootstrap
 
-if [[ $1 == "runner" ]]; then
+if [ "$1" == "runner" ]; then
+  echo "==> Running tests when files change..."
   npm run test-runner
 else
+  echo "==> Running tests once:"
   npm test
 fi

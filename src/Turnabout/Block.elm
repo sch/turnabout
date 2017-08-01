@@ -64,5 +64,6 @@ viewShape size block =
         []
 
 
+translateString : number -> number -> String
 translateString x y =
     "translate(" ++ (toString x) ++ " " ++ (toString y) ++ ")"
