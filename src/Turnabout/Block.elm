@@ -13,14 +13,11 @@ import Svg.Attributes as Attributes
 import Svg.Lazy exposing (lazy2)
 import Color
 import Color.Convert exposing (colorToHex)
+import Turnabout.Coordinate exposing (Coordinate)
 
 
 type Block
-    = Block (List Part)
-
-
-type alias Part =
-    ( Int, Int )
+    = Block (List Coordinate)
 
 
 singleton : Block
@@ -28,7 +25,7 @@ singleton =
     Block []
 
 
-withPart : Part -> Block -> Block
+withPart : Coordinate -> Block -> Block
 withPart part (Block parts) =
     Block (part :: parts)
 
