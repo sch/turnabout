@@ -1,14 +1,13 @@
 module Main exposing (main)
 
-import Turnabout exposing (..)
-import Html
+import Turnabout
+import Navigation
 
 
-main : Program Never Model Msg
 main =
-    Html.program
-        { init = ( initialState, Cmd.none )
-        , view = view
-        , update = update
-        , subscriptions = subscriptions
+    Navigation.program Turnabout.changeUrl
+        { init = Turnabout.initWithLocation
+        , view = Turnabout.view
+        , update = Turnabout.update
+        , subscriptions = Turnabout.subscriptions
         }

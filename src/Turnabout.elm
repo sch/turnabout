@@ -1,23 +1,15 @@
-module Turnabout exposing (Model, Msg, initialState, view, update, subscriptions)
+module Turnabout exposing (init, initWithLocation, view, update, subscriptions, changeUrl)
 
 import Html exposing (Html)
 import Html.Attributes as Attributes
 import Html.Events as Events
 import Keyboard
+import Navigation
 import Octicons
 import Turnabout.Playfield as Playfield
 import Turnabout.Level as Level exposing (Level)
 import Turnabout.Level.Model as LevelModel
 import Turnabout.Moves as Moves exposing (Moves, Rotation(..))
-
-
-type Msg
-    = Rotate Rotation
-    | Undo
-    | PlayfieldMessage Playfield.Msg
-    | SelectLevel Int
-    | ViewLevelSelect
-    | NoOp
 
 
 type Key
@@ -30,7 +22,23 @@ type alias Model =
     { currentLevel : Maybe Int
     , moves : Moves
     , playfield : Playfield.State
+    , history : List Navigation.Location
     }
+
+
+type Msg
+    = Rotate Rotation
+    | Undo
+    | PlayfieldMessage Playfield.Msg
+    | SelectLevel Int
+    | ViewLevelSelect
+    | UrlChange Navigation.Location
+    | NoOp
+
+
+changeUrl : Navigation.Location -> Msg
+changeUrl location =
+    UrlChange location
 
 
 initialState : Model
@@ -38,7 +46,18 @@ initialState =
     { currentLevel = Nothing
     , moves = Moves.initial
     , playfield = Playfield.initialState
+    , history = []
     }
+
+
+init : ( Model, Cmd Msg )
+init =
+    ( initialState, Cmd.none )
+
+
+initWithLocation : Navigation.Location -> ( Model, Cmd Msg )
+initWithLocation location =
+    ( { initialState | history = [ location ] }, Cmd.none )
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
@@ -117,6 +136,9 @@ update msg model =
                     Playfield.update playfieldMsg model.playfield
             in
                 ( { model | playfield = playfield }, Cmd.map PlayfieldMessage command )
+
+        UrlChange location ->
+            ( { model | history = location :: model.history }, Cmd.none )
 
         NoOp ->
             ( model, Cmd.none )
