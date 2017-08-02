@@ -10,6 +10,7 @@ import Turnabout.Playfield as Playfield
 import Turnabout.Level as Level exposing (Level)
 import Turnabout.Level.Model as LevelModel
 import Turnabout.Moves as Moves exposing (Moves, Rotation(..))
+import UrlParser as Url exposing ((</>))
 
 
 type Key
@@ -19,10 +20,9 @@ type Key
 
 
 type alias Model =
-    { currentLevel : Maybe Int
-    , moves : Moves
+    { moves : Moves
     , playfield : Playfield.State
-    , history : List Navigation.Location
+    , history : List Route
     }
 
 
@@ -43,8 +43,7 @@ changeUrl location =
 
 initialState : Model
 initialState =
-    { currentLevel = Nothing
-    , moves = Moves.initial
+    { moves = Moves.initial
     , playfield = Playfield.initialState
     , history = []
     }
@@ -57,33 +56,43 @@ init =
 
 initWithLocation : Navigation.Location -> ( Model, Cmd Msg )
 initWithLocation location =
-    ( { initialState | history = [ location ] }, Cmd.none )
+    ( { initialState | history = [ parseLocation location ] }, Cmd.none )
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case msg of
         Rotate rotation ->
-            let
-                moves =
-                    Moves.rotate rotation model.moves
-
-                ( playfield, cmd ) =
-                    case (Level.get (Maybe.withDefault 1 model.currentLevel)) of
-                        Just initialLevel ->
+            case List.head model.history of
+                Just route ->
+                    case route of
+                        Level number ->
                             let
-                                level =
-                                    Level.applyMoves moves initialLevel
+                                moves =
+                                    Moves.rotate rotation model.moves
+
+                                ( playfield, cmd ) =
+                                    case Level.get number of
+                                        Just initialLevel ->
+                                            let
+                                                level =
+                                                    Level.applyMoves moves initialLevel
+                                            in
+                                                Playfield.update (Playfield.rotate moves level) model.playfield
+
+                                        Nothing ->
+                                            ( model.playfield, Cmd.none )
+
+                                command =
+                                    Cmd.map PlayfieldMessage cmd
                             in
-                                Playfield.update (Playfield.rotate moves level) model.playfield
+                                ( { model | moves = moves, playfield = playfield }, command )
 
-                        Nothing ->
-                            ( model.playfield, Cmd.none )
+                        LevelSelect ->
+                            ( model, Cmd.none )
 
-                command =
-                    Cmd.map PlayfieldMessage cmd
-            in
-                ( { model | moves = moves, playfield = playfield }, command )
+                Nothing ->
+                    ( model, Cmd.none )
 
         Undo ->
             let
@@ -109,14 +118,13 @@ update msg model =
                             ( model.playfield, Cmd.none )
 
                 newModel =
-                    { model
-                        | currentLevel = Just levelNumber
-                        , moves = Moves.initial
-                        , playfield = playfield
-                    }
+                    { model | moves = Moves.initial, playfield = playfield }
 
                 command =
-                    Cmd.map PlayfieldMessage cmd
+                    Cmd.batch
+                        [ Cmd.map PlayfieldMessage cmd
+                        , Navigation.newUrl ("/level/" ++ (toString levelNumber))
+                        ]
             in
                 ( newModel, command )
 
@@ -126,9 +134,12 @@ update msg model =
                     Playfield.update Playfield.reset model.playfield
 
                 command =
-                    Cmd.map PlayfieldMessage cmd
+                    Cmd.batch
+                        [ Cmd.map PlayfieldMessage cmd
+                        , Navigation.newUrl "/"
+                        ]
             in
-                ( { model | currentLevel = Nothing, playfield = playfield }, command )
+                ( { model | playfield = playfield }, command )
 
         PlayfieldMessage playfieldMsg ->
             let
@@ -138,7 +149,7 @@ update msg model =
                 ( { model | playfield = playfield }, Cmd.map PlayfieldMessage command )
 
         UrlChange location ->
-            ( { model | history = location :: model.history }, Cmd.none )
+            ( { model | history = (parseLocation location) :: model.history }, Cmd.none )
 
         NoOp ->
             ( model, Cmd.none )
@@ -174,26 +185,36 @@ messagesFromCode keyCode =
 
 view : Model -> Html Msg
 view model =
-    case model.currentLevel of
-        Just levelNumber ->
-            case (Level.get levelNumber) of
-                Just initialLevel ->
-                    let
-                        level =
-                            Level.applyMoves model.moves initialLevel
-                    in
-                        levelView model.playfield level
+    case model.history of
+        [] ->
+            loadingView
 
-                Nothing ->
-                    levelUnavailableView levelNumber
+        latest :: _ ->
+            case latest of
+                Level levelNumber ->
+                    case (Level.get levelNumber) of
+                        Just initialLevel ->
+                            let
+                                level =
+                                    Level.applyMoves model.moves initialLevel
+                            in
+                                levelView model.playfield level
 
-        Nothing ->
-            levelSelectView model
+                        Nothing ->
+                            levelUnavailableView levelNumber
+
+                LevelSelect ->
+                    levelSelectView model
 
 
 levelUnavailableView : Int -> Html Msg
 levelUnavailableView number =
     Html.text ("There isn't a level " ++ (toString number))
+
+
+loadingView : Html Msg
+loadingView =
+    Html.text "Loading..."
 
 
 levelSelectView : Model -> Html Msg
@@ -298,3 +319,21 @@ button msg =
             [ Attributes.style styles, Events.onClick msg ]
     in
         Html.button attributes [ icon iconOptions ]
+
+
+type Route
+    = LevelSelect
+    | Level Int
+
+
+route : Url.Parser (Route -> a) a
+route =
+    Url.oneOf
+        [ Url.map LevelSelect Url.top
+        , Url.map Level (Url.s "level" </> Url.int)
+        ]
+
+
+parseLocation : Navigation.Location -> Route
+parseLocation location =
+    Url.parsePath route location |> Maybe.withDefault LevelSelect
