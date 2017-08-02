@@ -524,6 +524,7 @@ button msg =
             , ( "border-radius", "3px" )
             , ( "padding", "10px 11px" )
             , ( "cursor", "pointer" )
+            , ( "touch-action", "manipulation" )
             ]
 
         attributes =
