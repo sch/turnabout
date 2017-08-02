@@ -1,15 +1,11 @@
-module Turnabout exposing (init, initWithLocation, view, update, subscriptions, changeUrl)
+module Turnabout exposing (init, view, update, subscriptions, changeUrl)
 
 import Html exposing (Html)
 import Html.Attributes as Attributes
 import Html.Events as Events
-import Keyboard
 import Navigation
-import Octicons
 import Turnabout.Playfield as Playfield
 import Turnabout.Level as Level exposing (Level)
-import Turnabout.Level.Model as LevelModel
-import Turnabout.Moves as Moves exposing (Moves, Rotation(..))
 import Turnabout.Route as Route exposing (Route)
 
 
@@ -26,21 +22,16 @@ type Page
 
 
 type alias Model =
-    { moves : Moves
-    , playfield : Playfield.State
-    , history : List Route
+    { history : List Route
     , page : Page
     }
 
 
 type Msg
-    = Rotate Rotation
-    | Undo
-    | PlayfieldMessage Playfield.Msg
+    = PlayfieldMessage Playfield.Msg
     | SelectLevel Int
     | ViewLevelSelect
     | UrlChange Navigation.Location
-    | NoOp
 
 
 changeUrl : Navigation.Location -> Msg
@@ -48,113 +39,52 @@ changeUrl location =
     UrlChange location
 
 
-initialState : Model
-initialState =
-    { moves = Moves.initial
-    , playfield = Tuple.first (Playfield.init LevelModel.empty)
-    , history = []
-    , page = LevelSelect
-    }
+init : Navigation.Location -> ( Model, Cmd Msg )
+init location =
+    let
+        route =
+            Route.parse location
 
+        history =
+            [ route ]
 
-init : ( Model, Cmd Msg )
-init =
-    ( initialState, Cmd.none )
-
-
-initWithLocation : Navigation.Location -> ( Model, Cmd Msg )
-initWithLocation location =
-    ( { initialState | history = [ Route.parse location ] }, Cmd.none )
+        page =
+            pageState route
+    in
+        ( { history = history, page = page }, Cmd.none )
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case msg of
-        Rotate rotation ->
-            case List.head model.history of
-                Just route ->
-                    case route of
-                        Route.Level number ->
-                            let
-                                moves =
-                                    Moves.rotate rotation model.moves
-
-                                ( playfield, cmd ) =
-                                    case Level.get number of
-                                        Just initialLevel ->
-                                            let
-                                                level =
-                                                    Level.applyMoves moves initialLevel
-                                            in
-                                                Playfield.update (Playfield.rotate moves level) model.playfield
-
-                                        Nothing ->
-                                            ( model.playfield, Cmd.none )
-
-                                command =
-                                    Cmd.map PlayfieldMessage cmd
-                            in
-                                ( { model | moves = moves, playfield = playfield }, command )
-
-                        Route.LevelSelect ->
-                            ( model, Cmd.none )
-
-                Nothing ->
-                    ( model, Cmd.none )
-
-        Undo ->
-            let
-                moves =
-                    Moves.undo model.moves
-
-                ( playfield, cmd ) =
-                    Playfield.update (Playfield.rotate moves LevelModel.empty) model.playfield
-
-                command =
-                    Cmd.map PlayfieldMessage cmd
-            in
-                ( { model | moves = moves, playfield = playfield }, command )
-
         SelectLevel levelNumber ->
             let
-                ( playfield, cmd ) =
-                    case (Level.get levelNumber) of
-                        Just level ->
-                            Playfield.update (Playfield.appear level) model.playfield
-
-                        Nothing ->
-                            ( model.playfield, Cmd.none )
-
-                newModel =
-                    { model | moves = Moves.initial, playfield = playfield }
-
                 command =
-                    Cmd.batch
-                        [ Cmd.map PlayfieldMessage cmd
-                        , Navigation.newUrl ("/level/" ++ (toString levelNumber))
-                        ]
+                    Navigation.newUrl ("/level/" ++ (toString levelNumber))
             in
-                ( newModel, command )
+                ( model, command )
 
         ViewLevelSelect ->
             let
-                ( playfield, cmd ) =
-                    Playfield.update Playfield.reset model.playfield
-
                 command =
-                    Cmd.batch
-                        [ Cmd.map PlayfieldMessage cmd
-                        , Navigation.newUrl "/"
-                        ]
+                    Navigation.newUrl "/"
             in
-                ( { model | playfield = playfield }, command )
+                ( model, command )
+
+        PlayfieldMessage Playfield.Back ->
+            ( model, Navigation.newUrl "/" )
 
         PlayfieldMessage playfieldMsg ->
-            let
-                ( playfield, command ) =
-                    Playfield.update playfieldMsg model.playfield
-            in
-                ( { model | playfield = playfield }, Cmd.map PlayfieldMessage command )
+            case model.page of
+                Playfield playfield ->
+                    let
+                        ( playfieldState, command ) =
+                            Playfield.update playfieldMsg playfield
+                    in
+                        ( { model | page = Playfield playfieldState }, Cmd.map PlayfieldMessage command )
+
+                _ ->
+                    ( model, Cmd.none )
 
         UrlChange location ->
             let
@@ -165,50 +95,34 @@ update msg model =
                     route :: model.history
 
                 page =
-                    case route of
-                        Route.LevelSelect ->
-                            LevelSelect
-
-                        Route.Level number ->
-                            case Level.get number of
-                                Just level ->
-                                    Playfield (Tuple.first (Playfield.init level))
-
-                                Nothing ->
-                                    Error
+                    pageState route
             in
                 ( { model | history = history, page = page }, Cmd.none )
 
-        NoOp ->
-            ( model, Cmd.none )
+
+pageState : Route -> Page
+pageState route =
+    case route of
+        Route.LevelSelect ->
+            LevelSelect
+
+        Route.Level number ->
+            case Level.get number of
+                Just level ->
+                    Playfield (Tuple.first (Playfield.init level))
+
+                Nothing ->
+                    Error
 
 
 subscriptions : Model -> Sub Msg
 subscriptions model =
-    let
-        playfieldSubscriptions =
-            Playfield.subscriptions model.playfield |> Sub.map PlayfieldMessage
-    in
-        if Playfield.isAnimating model.playfield then
-            playfieldSubscriptions
-        else
-            Sub.batch [ Keyboard.downs messagesFromCode, playfieldSubscriptions ]
-
-
-messagesFromCode : Int -> Msg
-messagesFromCode keyCode =
-    case keyCode of
-        37 ->
-            Rotate CounterClockwise
-
-        39 ->
-            Rotate Clockwise
-
-        85 ->
-            Undo
+    case model.page of
+        Playfield playfield ->
+            Playfield.subscriptions playfield |> Sub.map PlayfieldMessage
 
         _ ->
-            NoOp
+            Sub.none
 
 
 view : Model -> Html Msg
@@ -218,11 +132,8 @@ view model =
             levelSelectView model
 
         Playfield playfield ->
-            let
-                level =
-                    Level.applyMoves model.moves playfield.level
-            in
-                levelView model.playfield level
+            Playfield.view playfield
+                |> Html.map PlayfieldMessage
 
         Error ->
             loadingView
@@ -269,74 +180,3 @@ levelSelectView model =
                 [ Attributes.style [ ( "list-style", "none" ), ( "padding", "0" ) ] ]
                 (List.range 1 levelCount |> List.map li)
             ]
-
-
-levelView : Playfield.State -> Level -> Html Msg
-levelView playfieldState level =
-    let
-        offset =
-            "16px"
-
-        topLeft =
-            absolutelyPositioned [ ( "top", offset ), ( "left", offset ) ]
-
-        topRight =
-            absolutelyPositioned [ ( "top", offset ), ( "right", offset ) ]
-
-        bottomLeft =
-            absolutelyPositioned [ ( "bottom", offset ), ( "left", offset ) ]
-
-        bottomRight =
-            absolutelyPositioned [ ( "bottom", offset ), ( "right", offset ) ]
-    in
-        Html.div [ Attributes.style [ ( "position", "relative" ), ( "height", "100%" ) ] ]
-            [ Playfield.view playfieldState level
-            , button ViewLevelSelect |> topLeft
-            , button Undo |> topRight
-            , button (Rotate CounterClockwise) |> bottomLeft
-            , button (Rotate Clockwise) |> bottomRight
-            ]
-
-
-absolutelyPositioned : List ( String, String ) -> Html msg -> Html msg
-absolutelyPositioned styles node =
-    Html.div
-        [ Attributes.style (List.append styles [ ( "position", "absolute" ) ]) ]
-        [ node ]
-
-
-button : Msg -> Html Msg
-button msg =
-    let
-        icon =
-            case msg of
-                Rotate CounterClockwise ->
-                    Octicons.chevronLeft
-
-                Rotate Clockwise ->
-                    Octicons.chevronRight
-
-                Undo ->
-                    Octicons.issueReopened
-
-                ViewLevelSelect ->
-                    Octicons.listUnordered
-
-                _ ->
-                    Debug.crash "You shouldn't be able to get here"
-
-        iconOptions =
-            Octicons.defaultOptions |> Octicons.size 24 |> Octicons.color "#555"
-
-        styles =
-            [ ( "background-color", "rgba(255, 255, 255, 0.5)" )
-            , ( "border", "none" )
-            , ( "border-radius", "3px" )
-            , ( "padding", "10px 11px" )
-            , ( "cursor", "pointer" )
-            ]
-
-        attributes =
-            [ Attributes.style styles, Events.onClick msg ]
-    in
-        Html.button attributes [ icon iconOptions ]

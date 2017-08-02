@@ -15,7 +15,6 @@ module Turnabout.Level
 import Turnabout.Extension exposing (zipDict)
 import Turnabout.Block exposing (Block)
 import Turnabout.Coordinate exposing (Coordinate)
-import Turnabout.Color exposing (Color)
 import Turnabout.Marble exposing (Marble(..))
 import Turnabout.Level.Model as Model
 import Turnabout.Level.String as LevelStrings
