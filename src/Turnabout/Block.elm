@@ -3,8 +3,6 @@ module Turnabout.Block
         ( Block(..)
         , singleton
         , withPart
-        , width
-        , height
         , view
         )
 
@@ -30,16 +28,6 @@ withPart part (Block parts) =
     Block (part :: parts)
 
 
-width : Block -> Int
-width (Block parts) =
-    parts |> List.map Tuple.first |> List.maximum |> Maybe.withDefault 0 |> (+) 1
-
-
-height : Block -> Int
-height (Block parts) =
-    parts |> List.map Tuple.second |> List.maximum |> Maybe.withDefault 0 |> (+) 1
-
-
 
 -- VIEW
 
@@ -47,18 +35,38 @@ height (Block parts) =
 view : Int -> ( Block, ( Int, Int ) ) -> Svg msg
 view size ( block, ( x, y ) ) =
     Svg.g
-        [ Attributes.transform (translateString (x * size + 1) (y * size + 1)) ]
+        [ Attributes.transform (translateString (x * size) (y * size)) ]
         [ lazy2 viewShape size block ]
 
 
 viewShape : Int -> Block -> Svg msg
 viewShape size block =
-    Svg.rect
+    Svg.polygon
         [ Attributes.fill (colorToHex Color.brown)
-        , Attributes.width (toString ((width block * size) - 2))
-        , Attributes.height (toString ((height block * size) - 2))
+        , Attributes.points (perimeterPoints size block)
         ]
         []
+
+
+perimeterPoints : Int -> Block -> String
+perimeterPoints size block =
+    perimeterPointsHelp size block [ ( 1, 1 ) ]
+        |> List.map (\( x, y ) -> (toString x) ++ "," ++ (toString y))
+        |> String.join " "
+
+
+perimeterPointsHelp : Int -> Block -> List Coordinate -> List Coordinate
+perimeterPointsHelp size (Block parts) points =
+    case parts of
+        [] ->
+            [ ( 1, 1 )
+            , ( size - 1, 1 )
+            , ( size - 1, size - 1 )
+            , ( 1, size - 1 )
+            ]
+
+        head :: rest ->
+            perimeterPointsHelp size (Block rest) points
 
 
 translateString : number -> number -> String
