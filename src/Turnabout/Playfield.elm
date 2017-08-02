@@ -480,15 +480,16 @@ absolutelyPositioned styles node =
 visible : Bool -> Html msg -> Html msg
 visible isVisible node =
     let
-        opacity =
+        ( opacity, touchable ) =
             if isVisible then
-                "1"
+                ( "1", "all" )
             else
-                "0"
+                ( "0", "none" )
 
         styles =
             [ ( "transition", "opacity 0.3s ease-in-out" )
             , ( "opacity", opacity )
+            , ( "pointer-events", touchable )
             ]
     in
         Html.div [ Attributes.style styles ] [ node ]
