@@ -2,7 +2,7 @@ module Turnabout.Playfield
     exposing
         ( Msg
         , State
-        , initialState
+        , init
         , rotate
         , appear
         , reset
@@ -69,6 +69,7 @@ type alias State =
     { isAnimating : Bool
     , styles : Animation.Messenger.State Msg
     , animatedPositions : AnimatedPositions
+    , level : Level
     }
 
 
@@ -89,16 +90,19 @@ type Msg
 -- STATE
 
 
-initialState : State
-initialState =
-    { isAnimating = False
-    , styles =
-        Animation.styleWith spring
-            [ Animation.rotate (deg 0)
-            , Animation.scale 0
-            ]
-    , animatedPositions = Dict.empty
-    }
+init : Level -> ( State, Cmd Msg )
+init level =
+    ( { isAnimating = False
+      , styles =
+            Animation.styleWith spring
+                [ Animation.rotate (deg 0)
+                , Animation.scale 0
+                ]
+      , animatedPositions = Dict.empty
+      , level = level
+      }
+    , Cmd.none
+    )
 
 
 

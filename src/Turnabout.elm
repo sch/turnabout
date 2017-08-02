@@ -10,7 +10,7 @@ import Turnabout.Playfield as Playfield
 import Turnabout.Level as Level exposing (Level)
 import Turnabout.Level.Model as LevelModel
 import Turnabout.Moves as Moves exposing (Moves, Rotation(..))
-import UrlParser as Url exposing ((</>))
+import Turnabout.Route as Route exposing (Route)
 
 
 type Key
@@ -19,10 +19,17 @@ type Key
     | Other
 
 
+type Page
+    = LevelSelect
+    | Playfield Playfield.State
+    | Error
+
+
 type alias Model =
     { moves : Moves
     , playfield : Playfield.State
     , history : List Route
+    , page : Page
     }
 
 
@@ -44,8 +51,9 @@ changeUrl location =
 initialState : Model
 initialState =
     { moves = Moves.initial
-    , playfield = Playfield.initialState
+    , playfield = Tuple.first (Playfield.init LevelModel.empty)
     , history = []
+    , page = LevelSelect
     }
 
 
@@ -56,7 +64,7 @@ init =
 
 initWithLocation : Navigation.Location -> ( Model, Cmd Msg )
 initWithLocation location =
-    ( { initialState | history = [ parseLocation location ] }, Cmd.none )
+    ( { initialState | history = [ Route.parse location ] }, Cmd.none )
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
@@ -66,7 +74,7 @@ update msg model =
             case List.head model.history of
                 Just route ->
                     case route of
-                        Level number ->
+                        Route.Level number ->
                             let
                                 moves =
                                     Moves.rotate rotation model.moves
@@ -88,7 +96,7 @@ update msg model =
                             in
                                 ( { model | moves = moves, playfield = playfield }, command )
 
-                        LevelSelect ->
+                        Route.LevelSelect ->
                             ( model, Cmd.none )
 
                 Nothing ->
@@ -149,7 +157,27 @@ update msg model =
                 ( { model | playfield = playfield }, Cmd.map PlayfieldMessage command )
 
         UrlChange location ->
-            ( { model | history = (parseLocation location) :: model.history }, Cmd.none )
+            let
+                route =
+                    Route.parse location
+
+                history =
+                    route :: model.history
+
+                page =
+                    case route of
+                        Route.LevelSelect ->
+                            LevelSelect
+
+                        Route.Level number ->
+                            case Level.get number of
+                                Just level ->
+                                    Playfield (Tuple.first (Playfield.init level))
+
+                                Nothing ->
+                                    Error
+            in
+                ( { model | history = history, page = page }, Cmd.none )
 
         NoOp ->
             ( model, Cmd.none )
@@ -185,26 +213,19 @@ messagesFromCode keyCode =
 
 view : Model -> Html Msg
 view model =
-    case model.history of
-        [] ->
+    case model.page of
+        LevelSelect ->
+            levelSelectView model
+
+        Playfield playfield ->
+            let
+                level =
+                    Level.applyMoves model.moves playfield.level
+            in
+                levelView model.playfield level
+
+        Error ->
             loadingView
-
-        latest :: _ ->
-            case latest of
-                Level levelNumber ->
-                    case (Level.get levelNumber) of
-                        Just initialLevel ->
-                            let
-                                level =
-                                    Level.applyMoves model.moves initialLevel
-                            in
-                                levelView model.playfield level
-
-                        Nothing ->
-                            levelUnavailableView levelNumber
-
-                LevelSelect ->
-                    levelSelectView model
 
 
 levelUnavailableView : Int -> Html Msg
@@ -319,21 +340,3 @@ button msg =
             [ Attributes.style styles, Events.onClick msg ]
     in
         Html.button attributes [ icon iconOptions ]
-
-
-type Route
-    = LevelSelect
-    | Level Int
-
-
-route : Url.Parser (Route -> a) a
-route =
-    Url.oneOf
-        [ Url.map LevelSelect Url.top
-        , Url.map Level (Url.s "level" </> Url.int)
-        ]
-
-
-parseLocation : Navigation.Location -> Route
-parseLocation location =
-    Url.parsePath route location |> Maybe.withDefault LevelSelect
