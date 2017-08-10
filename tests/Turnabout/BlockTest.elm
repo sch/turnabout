@@ -20,6 +20,16 @@ suite =
                 Block.singleton
                     |> Block.withPart ( 0, 1 )
                     |> expectPolygonWithPoints "1,1 19,1 19,39 1,39"
+        , test "draws some nutty concave thing" <|
+            \_ ->
+                Block.singleton
+                    |> Block.withPart ( 1, 0 )
+                    |> Block.withPart ( 1, 1 )
+                    |> Block.withPart ( 1, 2 )
+                    |> Block.withPart ( 1, 3 )
+                    |> Block.withPart ( 0, 3 )
+                    |> Block.withPart ( -1, 3 )
+                    |> expectPolygonWithPoints "1,1 39,1 39,79 -19,79 -19,61 21,61 21,19 1,19"
         ]
 
 
