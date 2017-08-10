@@ -3,7 +3,7 @@ module Turnabout.MovesTest exposing (suite)
 import Test exposing (..)
 import Expect
 import Turnabout.Moves as Moves exposing (..)
-import Turnabout.Direction exposing (Direction(..))
+import Turnabout.Direction exposing (Cardinal(..))
 
 
 suite : Test

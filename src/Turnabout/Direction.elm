@@ -1,8 +1,15 @@
-module Turnabout.Direction exposing (Direction(..))
+module Turnabout.Direction exposing (Cardinal(..), Ordinal(..))
 
 
-type Direction
+type Cardinal
     = North
     | South
     | East
     | West
+
+
+type Ordinal
+    = NorthWest
+    | NorthEast
+    | SouthEast
+    | SouthWest

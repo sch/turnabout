@@ -1,6 +1,6 @@
 module Turnabout.Coordinate exposing (Coordinate, add, subtract, byOne)
 
-import Turnabout.Direction exposing (Direction(..))
+import Turnabout.Direction as Direction exposing (Cardinal(..))
 
 
 type alias Coordinate =
@@ -13,7 +13,7 @@ type alias Distance =
 
 {-| The coordinate, moved one unit in the given direction
 -}
-by : Distance -> Direction -> Coordinate -> Coordinate
+by : Distance -> Direction.Cardinal -> Coordinate -> Coordinate
 by distance direction ( x, y ) =
     case direction of
         South ->
@@ -31,7 +31,7 @@ by distance direction ( x, y ) =
 
 {-| The coordinate, moved one unit in the given direction
 -}
-byOne : Direction -> Coordinate -> Coordinate
+byOne : Direction.Cardinal -> Coordinate -> Coordinate
 byOne =
     by 1
 
