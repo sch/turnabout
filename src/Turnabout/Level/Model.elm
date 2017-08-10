@@ -15,7 +15,7 @@ module Turnabout.Level.Model
 
 import Dict exposing (Dict)
 import Set exposing (Set)
-import Turnabout.Direction exposing (Direction(..))
+import Turnabout.Direction as Direction exposing (Cardinal(..))
 import Turnabout.Coordinate as Coordinate exposing (Coordinate)
 import Turnabout.Marble exposing (Marble)
 import Turnabout.Moves exposing (Rotation(Clockwise, CounterClockwise), Moves)
@@ -156,7 +156,7 @@ applyMoves moves level =
     applyMovesHelp moves level South
 
 
-applyMovesHelp : Moves -> Level -> Direction -> Level
+applyMovesHelp : Moves -> Level -> Direction.Cardinal -> Level
 applyMovesHelp moves level gravity =
     case moves of
         [] ->
@@ -170,12 +170,12 @@ applyMovesHelp moves level gravity =
                 applyMovesHelp rest (shiftMovables g level) g
 
 
-shiftMovables : Direction -> Level -> Level
+shiftMovables : Direction.Cardinal -> Level -> Level
 shiftMovables direction level =
     { level | movables = List.map (moveUntilBlocked direction level) level.movables }
 
 
-moveUntilBlocked : Direction -> Level -> Movable -> Movable
+moveUntilBlocked : Direction.Cardinal -> Level -> Movable -> Movable
 moveUntilBlocked direction level movable =
     if isBlocked direction level movable then
         movable
@@ -197,7 +197,7 @@ moveUntilBlocked direction level movable =
 {-| Given a level and a movable, check to see if that movable has settled into
 a position where it can move no longer.
 -}
-isBlocked : Direction -> Level -> Movable -> Bool
+isBlocked : Direction.Cardinal -> Level -> Movable -> Bool
 isBlocked direction level movable =
     case movable of
         Murble _ coordinate ->
@@ -230,7 +230,7 @@ occupying candidate movable =
             List.any (flip (==) candidate) coordinates
 
 
-nextGravity : Rotation -> Direction -> Direction
+nextGravity : Rotation -> Direction.Cardinal -> Direction.Cardinal
 nextGravity rotation gravityDirection =
     case gravityDirection of
         South ->

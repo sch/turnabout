@@ -11,8 +11,8 @@ import Svg.Attributes as Attributes
 import Svg.Lazy exposing (lazy2)
 import Color
 import Color.Convert exposing (colorToHex)
-import Turnabout.Coordinate as Coordinate exposing (Coordinate)
-import Turnabout.Direction exposing (Direction(..))
+import Turnabout.Coordinate as Coordinate exposing (Coordinate, byOne)
+import Turnabout.Direction as Direction exposing (Cardinal(..))
 
 
 type Block
@@ -27,6 +27,11 @@ singleton =
 withPart : Coordinate -> Block -> Block
 withPart part (Block parts) =
     Block (part :: parts)
+
+
+occupies : Coordinate -> Block -> Bool
+occupies coordinate (Block parts) =
+    List.member coordinate (( 0, 0 ) :: parts)
 
 
 
@@ -48,10 +53,13 @@ viewShape size block =
         ]
         []
 
-type alias Depth = Int
+
+type alias Depth =
+    Int
+
 
 type Cursor
-    = Cursor Direction Coordinate Depth
+    = Cursor Direction.Cardinal Coordinate Depth
 
 
 {-| This one is a doozy. This function will return a string of points for an Svg
@@ -62,69 +70,54 @@ we return the beginning position. This means the algorithm builds the svg points
 in reverse.)
 -}
 perimeterPoints : Int -> Block -> String
-perimeterPoints size (Block parts) =
+perimeterPoints size block =
     let
-        _ = Debug.log "- - -\nWalking perimeter\n- - -" parts
-
-        blockToThe : Direction -> Coordinate -> Bool
-        blockToThe direction currentLocation =
-            Debug.log ("block to the " ++ (toString direction) ++ " from " ++ (toString currentLocation)) <|
-                List.member
-                    (Coordinate.byOne direction currentLocation)
-                    (( 0, 0 ) :: parts)
-
         walkPerimeter : Cursor -> List Coordinate
         walkPerimeter cursor =
-            case Debug.log "\ncursor" cursor of
-                Cursor _ _ 20 ->
-                    [ (1, 1), (19, 1), (19, 19), (1, 19) ]
+            case cursor of
+                Cursor _ _ 100 ->
+                    Debug.log "Blew recursive drawing stack" []
 
-                Cursor West ( 1, 0 ) _ ->
-                    [ ( 1, 1 ), (39, 1) ]
+                Cursor West ( 0, 0 ) _ ->
+                    [ ( 1, 1 ) ]
 
-                Cursor North ( 0, 1 ) _ ->
-                    [ ( 1, 1 ), (1, 19) ]
-
-                Cursor North ( x, y ) depth ->
-                    if blockToThe East ( x, y ) then
-                        ( x * size + 1, y * size + 1 ) :: walkPerimeter (Cursor East ( x + 1, y ) (depth + 1))
-                    else if blockToThe West ( x, y ) then
-                        ( x * size + 1, y * size + 1 ) :: walkPerimeter (Cursor West ( x - 1, y ) (depth + 1))
-                    else
-                        walkPerimeter (Cursor North ( x, y - 1 ) (depth + 1))
+                Cursor South ( 0, -1 ) _ ->
+                    []
 
                 Cursor South ( x, y ) depth ->
-                    if blockToThe East ( x, y ) then
-                        ( x * size + 1, y * size + 1 ) :: walkPerimeter (Cursor East ( x + 1, y ) (depth + 1))
-                    else if blockToThe West ( x, y ) then
-                        ( x * size + 1, (y + 1) * size + 1 ) :: walkPerimeter (Cursor West ( x - 1, y ) (depth + 1))
-                    else if blockToThe South (x, y) then
+                    if block |> occupies (( x, y ) |> byOne South |> byOne West) then
+                        ( x * size + 1, (y + 1) * size + 1 ) :: walkPerimeter (Cursor West ( x - 1, y + 1 ) (depth + 1))
+                    else if block |> occupies (( x, y ) |> byOne South) then
                         walkPerimeter (Cursor South ( x, y + 1 ) (depth + 1))
                     else
-                        ( x * size + 1, ((y + 1) * size - 1)) :: walkPerimeter (Cursor East ( x, y) (depth + 1))
+                        ( x * size + 1, ((y + 1) * size - 1) ) :: walkPerimeter (Cursor East ( x, y ) (depth + 1))
 
                 Cursor East ( x, y ) depth ->
-                    if blockToThe South ( x, y ) then
-                        ( x * size + 1, y * size + 1 ) :: walkPerimeter (Cursor South ( x, y + 1 ) (depth + 1))
-                    else if blockToThe North ( x, y ) then
-                        ( x * size + 1, y * size + 1 ) :: walkPerimeter (Cursor North ( x, y - 1 ) (depth + 1))
-                    else if blockToThe East ( x, y ) then
-                        walkPerimeter (Cursor East ( x + 1, y) (depth + 1))
+                    if block |> occupies (( x, y ) |> byOne East |> byOne South) then
+                        ( (x + 1) * size + 1, (y + 1) * size - 1 ) :: walkPerimeter (Cursor South ( x + 1, y + 1 ) (depth + 1))
+                    else if block |> occupies (( x, y ) |> byOne East) then
+                        walkPerimeter (Cursor East ( x + 1, y ) (depth + 1))
                     else
-                        ( (x + 1) * size + 1, (y + 1) * size + 1 ) :: walkPerimeter (Cursor North ( x, y) (depth + 1))
+                        ( (x + 1) * size - 1, ((y + 1) * size - 1) ) :: walkPerimeter (Cursor North ( x, y ) (depth + 1))
+
+                Cursor North ( x, y ) depth ->
+                    if block |> occupies (( x, y ) |> byOne North |> byOne East) then
+                        ( (x + 1) * size - 1, y * size - 1 ) :: walkPerimeter (Cursor East ( x + 1, y - 1 ) (depth + 1))
+                    else if block |> occupies (( x, y ) |> byOne North) then
+                        walkPerimeter (Cursor North ( x, y - 1 ) (depth + 1))
+                    else
+                        ( (x + 1) * size - 1, (y * size + 1) ) :: walkPerimeter (Cursor West ( x, y ) (depth + 1))
 
                 Cursor West ( x, y ) depth ->
-                    if blockToThe South ( x, y ) then
-                        ( x * size + 1, y * size + 1 ) :: walkPerimeter (Cursor South ( x, y + 1 ) (depth + 1))
-                    else if blockToThe North ( x, y ) then
-                        ( x * size + 1, y * size + 1 ) :: walkPerimeter (Cursor North ( x, y - 1 ) (depth + 1))
-                    else if blockToThe West ( x, y ) then
-                        walkPerimeter (Cursor West ( x - 1, y) (depth + 1))
+                    if block |> occupies (( x, y ) |> byOne West |> byOne North) then
+                        ( x * size - 1, y * size + 1 ) :: walkPerimeter (Cursor North ( x - 1, y - 1 ) (depth + 1))
+                    else if block |> occupies (( x, y ) |> byOne West) then
+                        walkPerimeter (Cursor West ( x - 1, y ) (depth + 1))
                     else
-                        walkPerimeter (Cursor West ( x - 1, y) (depth + 1))
-
+                        ( x * size + 1, (y * size + 1) ) :: walkPerimeter (Cursor South ( x, y ) (depth + 1))
     in
         walkPerimeter (Cursor South ( 0, 0 ) 0)
+            |> List.reverse
             |> List.map (\( x, y ) -> (toString x) ++ "," ++ (toString y))
             |> String.join " "
 

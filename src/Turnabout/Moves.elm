@@ -11,7 +11,7 @@ module Turnabout.Moves
         , toDirection
         )
 
-import Turnabout.Direction exposing (Direction(..))
+import Turnabout.Direction as Direction exposing (Cardinal(..))
 
 
 type Rotation
@@ -63,7 +63,7 @@ rotationInDegrees rotation =
             -90
 
 
-toDirection : Moves -> Direction
+toDirection : Moves -> Direction.Cardinal
 toDirection moves =
     case toDegrees moves % 360 of
         (-90) ->
