@@ -1,4 +1,4 @@
-module Turnabout.Coordinate exposing (Coordinate, add, subtract, byOne)
+module Turnabout.Coordinate exposing (Coordinate, add, subtract, byOne, walk)
 
 import Turnabout.Direction as Direction exposing (Cardinal(..))
 
@@ -9,6 +9,10 @@ type alias Coordinate =
 
 type alias Distance =
     Int
+
+
+type alias Path
+    = List Cardinal
 
 
 {-| The coordinate, moved one unit in the given direction
@@ -34,6 +38,18 @@ by distance direction ( x, y ) =
 byOne : Direction.Cardinal -> Coordinate -> Coordinate
 byOne =
     by 1
+
+
+{-| The coordinate, after moving along the path of a couple directions
+-}
+walk : Path -> Coordinate -> Coordinate
+walk directions current =
+    case directions of
+        [] ->
+            current
+
+        direction :: rest ->
+            walk rest (byOne direction current)
 
 
 add : Coordinate -> Coordinate -> Coordinate

@@ -11,7 +11,7 @@ import Svg.Attributes as Attributes
 import Svg.Lazy exposing (lazy2)
 import Color
 import Color.Convert exposing (colorToHex)
-import Turnabout.Coordinate as Coordinate exposing (Coordinate, byOne)
+import Turnabout.Coordinate as Coordinate exposing (Coordinate, byOne, walk)
 import Turnabout.Direction as Direction exposing (Cardinal(..))
 
 
@@ -85,7 +85,7 @@ perimeterPoints size block =
                     []
 
                 Cursor South ( x, y ) depth ->
-                    if block |> occupies (( x, y ) |> byOne South |> byOne West) then
+                    if block |> occupies (( x, y ) |> walk [ South, West ]) then
                         ( x * size + 1, (y + 1) * size + 1 ) :: walkPerimeter (Cursor West ( x - 1, y + 1 ) (depth + 1))
                     else if block |> occupies (( x, y ) |> byOne South) then
                         walkPerimeter (Cursor South ( x, y + 1 ) (depth + 1))
@@ -93,7 +93,7 @@ perimeterPoints size block =
                         ( x * size + 1, ((y + 1) * size - 1) ) :: walkPerimeter (Cursor East ( x, y ) (depth + 1))
 
                 Cursor East ( x, y ) depth ->
-                    if block |> occupies (( x, y ) |> byOne East |> byOne South) then
+                    if block |> occupies (( x, y ) |> walk [ East, South ]) then
                         ( (x + 1) * size + 1, (y + 1) * size - 1 ) :: walkPerimeter (Cursor South ( x + 1, y + 1 ) (depth + 1))
                     else if block |> occupies (( x, y ) |> byOne East) then
                         walkPerimeter (Cursor East ( x + 1, y ) (depth + 1))
@@ -101,7 +101,7 @@ perimeterPoints size block =
                         ( (x + 1) * size - 1, ((y + 1) * size - 1) ) :: walkPerimeter (Cursor North ( x, y ) (depth + 1))
 
                 Cursor North ( x, y ) depth ->
-                    if block |> occupies (( x, y ) |> byOne North |> byOne East) then
+                    if block |> occupies (( x, y ) |> walk [ North, East ]) then
                         ( (x + 1) * size - 1, y * size - 1 ) :: walkPerimeter (Cursor East ( x + 1, y - 1 ) (depth + 1))
                     else if block |> occupies (( x, y ) |> byOne North) then
                         walkPerimeter (Cursor North ( x, y - 1 ) (depth + 1))
@@ -109,7 +109,7 @@ perimeterPoints size block =
                         ( (x + 1) * size - 1, (y * size + 1) ) :: walkPerimeter (Cursor West ( x, y ) (depth + 1))
 
                 Cursor West ( x, y ) depth ->
-                    if block |> occupies (( x, y ) |> byOne West |> byOne North) then
+                    if block |> occupies (( x, y ) |> walk [ West, North ]) then
                         ( x * size - 1, y * size + 1 ) :: walkPerimeter (Cursor North ( x - 1, y - 1 ) (depth + 1))
                     else if block |> occupies (( x, y ) |> byOne West) then
                         walkPerimeter (Cursor West ( x - 1, y ) (depth + 1))
