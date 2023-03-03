@@ -19,7 +19,7 @@
   },
   "homepage": "https://adrian.schaedle.me/turnabout",
   "devDependencies": {
-    "elm": "^0.18.0",
+    "elm": "^0.19.1-5",
     "elm-live": "^2.7.5",
     "elm-test": "^0.18.7",
     "google-closure-compiler-js": "^20170626.0.0"
